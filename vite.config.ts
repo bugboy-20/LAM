@@ -4,6 +4,7 @@ import legacy from '@vitejs/plugin-legacy'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 import { defineConfig } from 'vite'
+import variables from './src/variables.json'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -19,5 +20,14 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom'
-  }
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: variables.apiURL,
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/api/, ''),
+      },
+    },
+  },
 })
