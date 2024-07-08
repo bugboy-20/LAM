@@ -1,49 +1,47 @@
 <template>
-  <ion-page>
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>Login</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content>
-      <ion-button @click="login">Login</ion-button>
-      <ion-toast
+  <ionPage>
+    <ionHeader>
+      <ionToolbar>
+        <ionTitle>Login</ionTitle>
+      </ionToolbar>
+    </ionHeader>
+    <ionContent>
+      <ionInput label="Username" placeholder="Username"></ionInput>
+      <ionInput label="Password" placeholder="Password" type="password"></ionInput>
+
+      <ionCheckbox label-placement="end" >Remeber me</ionCheckbox><br>
+      <ionButton @click="login">Login</ionButton>
+      <p>
+        Don't have an account? Singup 
+       <ionNavLink router-link="/signup" >here</ionNavLink>
+      </p>
+      <ionToast
         :isOpen="loginError"
         message="Login failed. Please try again."
         position="top"
-        duration="2000"></ion-toast>
-    </ion-content>
-  </ion-page>
+        duration="2000"></ionToast>
+    </ionContent>
+  </ionPage>
 </template>
 <script setup lang="ts">
 
-import { IonButton, IonPage, IonHeader, IonToolbar, IonContent, IonTitle, IonToast} from '@ionic/vue';
+import { 
+  IonButton,
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonContent,
+  IonTitle,
+  IonToast,
+  IonInput,
+  IonCheckbox,
+  IonNavLink
+} from '@ionic/vue';
 import { useRouter } from 'vue-router';
 import { ref } from 'vue';
 
 const router = useRouter();
 const loginError = ref(false);
-
-async function singup() {
-  await fetch('/api/auth', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      username: 'angolo180',
-      password: 'Angolo.180',
-    }),
-  }).then((response) => {
-    if (response.ok) {
-      console.log( response.json());
-    }
-    throw new Error('Network response was not ok.');
-  }).catch((error) => {
-    console.error('There has been a problem with your fetch operation:', error);
-  });
-  //TODO login after signup
-}
 
 async function login() {
   if (loginError.value) {
