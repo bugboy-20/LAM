@@ -53,7 +53,7 @@ async function login() {
     mode: 'cors',
     method: 'POST',
     body: new URLSearchParams({
-      username: 'angylo180',
+      username: 'angolo180',
       password: 'Angolo.180',
     })}).then((response) => {
       console.log('after fetch');
@@ -70,10 +70,20 @@ async function login() {
       if(response.status == 200) {
         loginError.value = false;
         console.log(response);
-        return router.push('/tabs/');
+        return response.json();
       }
       console.log(response);
+    }).then((json) => {
+      console.log(json);
+      const token = json.client_secret;
+      if (!token) {
+        throw new Error('No token found in response.');
+      }
+      return router.push(`/tabs/?token=${token}`);
     }).catch((error) => {
+      console.error('There has been a problem with your fetch operation:', error);
+    })
+    .catch((error) => {
       console.error('There has been a problem with your fetch operation:', error);
     });
 }

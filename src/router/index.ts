@@ -16,6 +16,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/tabs/',
     component: TabsPage,
+    props: route => ({ token: route.query.token }),
     children: [
       {
         path: '',
