@@ -6,8 +6,10 @@
       </ionToolbar>
     </ionHeader>
     <ionContent>
-      <ionInput label="Username" placeholder="Username"></ionInput>
-      <ionInput label="Password" placeholder="Password" type="password"></ionInput>
+    <ionInput label="Username" placeholder="Username" v-model="username"></ionInput>
+    <ionInput label="Password" placeholder="Password" type="password" v-model="password">
+      <IonInputPasswordToggle slot="end"></IonInputPasswordToggle>
+    </ionInput>
 
       <ionCheckbox label-placement="end" >Remeber me</ionCheckbox><br>
       <ionButton @click="login">Login</ionButton>
@@ -35,13 +37,17 @@ import {
   IonToast,
   IonInput,
   IonCheckbox,
-  IonNavLink
+  IonNavLink,
+  IonInputPasswordToggle
 } from '@ionic/vue';
 import { useRouter } from 'vue-router';
 import { ref } from 'vue';
 
 const router = useRouter();
 const loginError = ref(false);
+
+const username = ref('angolo180');
+const password = ref('Angolo.180');
 
 async function login() {
   if (loginError.value) {
@@ -51,8 +57,8 @@ async function login() {
     mode: 'cors',
     method: 'POST',
     body: new URLSearchParams({
-      username: 'angolo180',
-      password: 'Angolo.180',
+      username: username.value,
+      password: password.value,
     })}).then((response) => {
       console.log('after fetch');
       if(response.status == 400) {
@@ -77,7 +83,7 @@ async function login() {
       if (!token) {
         throw new Error('No token found in response.');
       }
-      return router.push(`/tabs/?token=${token}`);
+      return router.push(`/tabs/?token=${token}`); // TODO: secure this
     }).catch((error) => {
       console.error('There has been a problem with your fetch operation:', error);
     })
