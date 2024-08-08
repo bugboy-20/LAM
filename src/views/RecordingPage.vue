@@ -12,7 +12,6 @@
 <script setup lang="ts">
 import { IonPage, IonContent, IonIcon, IonButton } from '@ionic/vue';
 import {micCircleOutline, micCircleSharp} from 'ionicons/icons';
-
 const startRecording = () => {
   console.log('Recording started');
 }
