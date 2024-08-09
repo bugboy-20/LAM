@@ -1,43 +1,33 @@
 <template>
-  <ionPage>
-    <ionContent :fullscreen="true">
-    X:XX/XX:XX
-    <IonButton @click="startRecording()" >
-      <ionIcon :icon="micCircleOutline" ></ionIcon>
-    </IonButton>
-    <IonButton @click="stopRecording()" >
-      <ionIcon :icon="micCircleSharp" color="red" ></ionIcon>
-    </IonButton>
-    </ionContent>
-  </ionPage>
+  <IonPage>
+    <IonContent :fullscreen="true">
+      X:XX/XX:XX
+      <IonButton @click="buttonFunction" >
+        <IonIcon :icon="buttonIcon" ></IonIcon>
+      </IonButton>
+    </IonContent>
+  </IonPage>
 </template>
 
 <script setup lang="ts">
 import { IonPage, IonContent, IonIcon, IonButton } from '@ionic/vue';
-import {micCircleOutline, micCircleSharp} from 'ionicons/icons';
+import { micCircleOutline, stopCircleOutline } from 'ionicons/icons';
 import { GenericResponse, RecordingData, VoiceRecorder } from 'cap-voice-rec';
-/*
-VoiceRecorder.canDeviceVoiceRecord().then((canRecord) => {
-  if (canRecord.value) {
-    console.log('Device can record');
-  } else {
-    console.log('Device cannot record');
-  }
-});*/
+import { ref, watch } from 'vue';
 
-const startRecording = async () => {
-  console.log('ping')
-  VoiceRecorder.hasAudioRecordingPermission().then((result: GenericResponse) => console.log(result.value))
-   await VoiceRecorder.startRecording()
-    .then((result: GenericResponse) => console.log(result.value))
-    .catch(error => console.log(error)) 
-  console.log('Recording started');
-}
+const startRecording = async () => VoiceRecorder.startRecording()
+    .then((result: GenericResponse) => {
+      recording.value = true
+      console.log(buttonIcon)
+      console.log(result.value)
+    })
+    .catch(error => console.log(error))
 
-const stopRecording = async () => {
-  console.log('ping')
-  await VoiceRecorder.stopRecording()
+
+const stopRecording = async () => VoiceRecorder.stopRecording()
     .then((result: RecordingData) => {
+      recording.value = false
+      console.log(buttonIcon)
       const b64 = result.value.recordDataBase64;
       const mime = result.value.mimeType;
       const audioRef = new Audio(`data:${mime};base64,${b64}`)
@@ -47,7 +37,15 @@ const stopRecording = async () => {
       console.log(result.value)
     })
     .catch(error => console.log(error))
-}
+
+const recording = ref(false)
+const buttonIcon = ref(micCircleOutline)
+const buttonFunction = ref(startRecording)
+
+watch(recording, (newValue) => {
+  buttonIcon.value = newValue ? stopCircleOutline : micCircleOutline
+  buttonFunction.value = newValue ? stopRecording : startRecording
+})
 </script>
 
 <style scoped>
