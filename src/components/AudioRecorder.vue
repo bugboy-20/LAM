@@ -1,6 +1,6 @@
 <template>
   {{ formattedTime }}/{{ maxDuration }}
-  <IonButton @click="buttonFunction" >
+  <IonButton @click="buttonFunction" fill="clear">
     <IonIcon :icon="buttonIcon" ></IonIcon>
   </IonButton>
 </template>
@@ -22,12 +22,13 @@ const startRecording = async () => VoiceRecorder.startRecording()
 const stopRecording = async () => VoiceRecorder.stopRecording()
     .then((result: RecordingData) => {
       recording.value = false
+      /*
       const b64 = result.value.recordDataBase64;
       const mime = result.value.mimeType;
       const audioRef = new Audio(`data:${mime};base64,${b64}`)
       audioRef.oncanplaythrough = () => audioRef.play()
       audioRef.load()
-
+      */
       duration.value = 0
       console.log(result.value)
     })
@@ -54,10 +55,9 @@ const startTimer = () => {
   const interval = setInterval(() => {
     duration.value++
     if (duration.value >= 60 || !recording.value) {
-      stopRecording()
       clearInterval(interval)
     }
-  }, 1000) // 1 second is too much, he doens't look very rective
+  }, 1000) //TODO 1 second is too much, he doens't look very rective
 }
 
 </script>
