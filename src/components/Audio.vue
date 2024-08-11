@@ -7,7 +7,7 @@
       <IonButton fill="clear" @click="playFunction">
         <IonIcon :icon="playIcon" ></IonIcon>
       </IonButton>
-      {{ millisToMinutesAndSeconds( currentTime )}} / {{  millisToMinutesAndSeconds( props.audio.duration) }}
+      <AudioTimestamp :duration="props.audio.duration" ref="timestamp"/>
       <IonButton fill="clear" @click="uploadAudio">
         <IonIcon :icon="cloudUploadOutline" ></IonIcon>
       </IonButton>
@@ -21,14 +21,16 @@
 import { IonButton, IonIcon } from '@ionic/vue';
 import {cloudUploadOutline, pauseCircleOutline, playCircleOutline, trashOutline} from 'ionicons/icons';
 import { AudioInternal } from '@/interfaces';
+import AudioTimestamp from '@/components/AudioTimestamp.vue';
 import {ref, watch} from 'vue';
 
 const isPlaying = ref(false)
 const props = defineProps<{audio: AudioInternal}>()
-const currentTime = ref(0)
 let audioRef : HTMLAudioElement
 
 console.log(props.audio)
+
+const timestamp = ref<typeof AudioTimestamp | null>(null)
 
 const playAudio = () => {
   const b64 = props.audio.audioBase64;
@@ -36,19 +38,21 @@ const playAudio = () => {
   audioRef = new Audio(`data:${mime};base64,${b64}`)
   audioRef.oncanplaythrough = () => audioRef.play()
   audioRef.load()
-  audioRef.onended = () => isPlaying.value = false
+  audioRef.onended = () => { isPlaying.value = false; timestamp.value?.stop(props.audio.duration) }
   isPlaying.value = true
+  timestamp.value?.play()
 }
 const pauseAudio = () => {
   audioRef.pause()
   isPlaying.value = false
+  timestamp.value?.pause()
 }
 
-const uploadAudio = () => {
+const uploadAudio = () => { // TODO
   console.log('uploading audio')
 }
 
-const deleteAudio = () => {
+const deleteAudio = () => { // TODO
   console.log('deleting audio')
 }
 
@@ -60,11 +64,6 @@ watch(isPlaying, (newValue) => {
   playFunction.value = newValue ? pauseAudio : playAudio
 })
 
-const millisToMinutesAndSeconds = (millis: number) => {
-  let minutes = Math.floor(millis / 60000);
-  let seconds = ((millis % 60000) / 1000).toFixed(0);
-  return minutes + ":" + (parseInt(seconds) < 10 ? '0' : '') + seconds;
-}
 </script>
 <style scoped>
   #card {

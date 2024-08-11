@@ -1,5 +1,5 @@
 <template>
-  {{ formattedTime }}/{{ maxDuration }}
+  <AudioTimestamp :duration="maxDuration" ref="timestamp"/>
   <IonButton @click="buttonFunction" fill="clear">
     <IonIcon :icon="buttonIcon" ></IonIcon>
   </IonButton>
@@ -11,7 +11,7 @@ import { micCircleOutline, stopCircleOutline } from 'ionicons/icons';
 import { GenericResponse, RecordingData, VoiceRecorder } from 'cap-voice-rec';
 import { ref, watch, computed } from 'vue';
 import {AudioInternal} from '@/interfaces';
-
+import AudioTimestamp from '@/components/AudioTimestamp.vue';
 const emit = defineEmits<{
   recordedAudio: [audio: AudioInternal] // named tuple syntax
 }>()
@@ -19,7 +19,7 @@ const emit = defineEmits<{
 const startRecording = async () => VoiceRecorder.startRecording()
     .then((result: GenericResponse) => {
       recording.value = true
-      startTimer()
+      timestamp.value?.play()
     })
     .catch(error => console.error(error))
 
@@ -45,35 +45,20 @@ const stopRecording = async () => VoiceRecorder.stopRecording()
         metadata: null
       }
       emit('recordedAudio', audio)
-      console.log(result.value)
+      timestamp.value?.stop(0)
     })
     .catch(error => console.error(error))
 
 const recording = ref(false)
 const buttonIcon = ref(micCircleOutline)
 const buttonFunction = ref(startRecording)
-const maxDuration = '1:00'
+const maxDuration = 1 * 60 * 1000 // 1 minute
 const duration = ref(0)
-
+const timestamp = ref<typeof AudioTimestamp | null>(null)
 watch(recording, (newValue) => {
   buttonIcon.value = newValue ? stopCircleOutline : micCircleOutline
   buttonFunction.value = newValue ? stopRecording : startRecording
 })
-
-const formattedTime = computed(() => {
-      const minutes = Math.floor(duration.value / 60);
-      const seconds = duration.value % 60;
-      return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-  });
-
-const startTimer = () => {
-  const interval = setInterval(() => {
-    duration.value++
-    if (duration.value >= 60 || !recording.value) {
-      clearInterval(interval)
-    }
-  }, 1000) //TODO 1 second is too much, he doens't look very rective
-}
 
 </script>
 
