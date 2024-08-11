@@ -2,8 +2,8 @@
   <IonPage>
     <IonContent :fullscreen="true">
     <div id="recordPage">
-      <AudioRecorder />
-      <Audio />
+      <AudioRecorder @recordedAudio="(r : AudioInternal) => {recAudio=r}" />
+      <Audio v-if="recAudio" :audio="recAudio"/>
     </div>
     </IonContent>
   </IonPage>
@@ -13,6 +13,10 @@
 import { IonContent, IonPage } from '@ionic/vue';
 import AudioRecorder from '@/components/AudioRecorder.vue';
 import Audio from '@/components/Audio.vue';
+import { AudioInternal } from '@/interfaces';
+import { ref } from 'vue';
+
+let recAudio = ref<AudioInternal | null>(null)
 </script>
 
 <style scoped>

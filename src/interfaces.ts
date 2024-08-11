@@ -10,7 +10,7 @@ export interface Audio {
 export interface AudioInternal {
   id: string;
   createdAt: Date;
-  updatedAt: Date;
+  updatedAt: Date | null;
   audioBase64: string;
   mimeType: string;
   duration: number;

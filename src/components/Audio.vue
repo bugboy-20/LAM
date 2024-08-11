@@ -7,7 +7,7 @@
       <IonButton fill="clear" @click="playFunction">
         <IonIcon :icon="playIcon" ></IonIcon>
       </IonButton>
-      0:48/1:00 
+      {{ millisToMinutesAndSeconds( currentTime )}} / {{  millisToMinutesAndSeconds( props.audio.duration) }}
       <IonButton fill="clear" @click="uploadAudio">
         <IonIcon :icon="cloudUploadOutline" ></IonIcon>
       </IonButton>
@@ -25,20 +25,22 @@ import {ref, watch} from 'vue';
 
 const isPlaying = ref(false)
 const props = defineProps<{audio: AudioInternal}>()
+const currentTime = ref(0)
 let audioRef : HTMLAudioElement
 
 console.log(props.audio)
 
 const playAudio = () => {
-  /*const b64 = props.audio.audioBase64;
+  const b64 = props.audio.audioBase64;
   const mime = props.audio.mimeType;
   audioRef = new Audio(`data:${mime};base64,${b64}`)
   audioRef.oncanplaythrough = () => audioRef.play()
-  audioRef.load()*/
+  audioRef.load()
+  audioRef.onended = () => isPlaying.value = false
   isPlaying.value = true
 }
 const pauseAudio = () => {
-  //audioRef.pause()
+  audioRef.pause()
   isPlaying.value = false
 }
 
@@ -57,6 +59,12 @@ watch(isPlaying, (newValue) => {
   playIcon.value = newValue ? pauseCircleOutline : playCircleOutline
   playFunction.value = newValue ? pauseAudio : playAudio
 })
+
+const millisToMinutesAndSeconds = (millis: number) => {
+  let minutes = Math.floor(millis / 60000);
+  let seconds = ((millis % 60000) / 1000).toFixed(0);
+  return minutes + ":" + (parseInt(seconds) < 10 ? '0' : '') + seconds;
+}
 </script>
 <style scoped>
   #card {
