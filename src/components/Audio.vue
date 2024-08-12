@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { IonButton, IonIcon } from '@ionic/vue';
+import { IonButton, IonIcon, } from '@ionic/vue';
 import {cloudUploadOutline, pauseCircleOutline, playCircleOutline, trashOutline} from 'ionicons/icons';
 import { AudioInternal } from '@/interfaces';
 import AudioTimestamp from '@/components/AudioTimestamp.vue';
@@ -28,7 +28,7 @@ const isPlaying = ref(false)
 const props = defineProps<{audio: AudioInternal}>()
 let audioRef : HTMLAudioElement
 
-console.log(props.audio)
+console.log(props.audio) //TODO does the audio as been already saved in the database?
 
 const timestamp = ref<typeof AudioTimestamp | null>(null)
 

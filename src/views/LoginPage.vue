@@ -1,29 +1,25 @@
 <template>
-  <ionPage>
-    <ionHeader>
-      <ionToolbar>
-        <ionTitle>Login</ionTitle>
-      </ionToolbar>
-    </ionHeader>
-    <ionContent>
-    <ionInput label="Username" placeholder="Username" v-model="username"></ionInput>
-    <ionInput label="Password" placeholder="Password" type="password" v-model="password">
+  <IonPage>
+    <IonHeader>
+      <IonToolbar>
+        <IonTitle>Login</IonTitle>
+      </IonToolbar>
+    </IonHeader>
+    <IonContent>
+    <IonInput label="Username" placeholder="Username" v-model="username"></IonInput>
+    <IonInput label="Password" placeholder="Password" type="password" v-model="password">
       <IonInputPasswordToggle slot="end"></IonInputPasswordToggle>
-    </ionInput>
+    </IonInput>
 
-      <ionCheckbox label-placement="end" >Remeber me</ionCheckbox><br>
-      <ionButton @click="login">Login</ionButton>
+      <IonCheckbox label-placement="end" >Remeber me</IonCheckbox><br>
+      <IonButton @click="login">Login</IonButton>
       <p>
         Don't have an account? Singup 
-       <ionNavLink router-link="/signup" >here</ionNavLink>
+       <IonNavLink router-link="/signup" >here</IonNavLink>
       </p>
-      <ionToast
-        :isOpen="loginError"
-        message="Login failed. Please try again."
-        position="top"
-        duration="2000"></ionToast>
-    </ionContent>
-  </ionPage>
+      <Message ref="loginError" :message="errorMessage"></Message>
+    </IonContent>
+  </IonPage>
 </template>
 <script setup lang="ts">
 
@@ -34,7 +30,6 @@ import {
   IonToolbar,
   IonContent,
   IonTitle,
-  IonToast,
   IonInput,
   IonCheckbox,
   IonNavLink,
@@ -42,15 +37,15 @@ import {
 } from '@ionic/vue';
 import { useRouter } from 'vue-router';
 import { ref } from 'vue';
-
+import Message from '@/components/Message.vue';
 const router = useRouter();
-const loginError = ref(false);
-
+const loginError = ref< typeof Message | null>(null);
+const errorMessage = ref('Invalid username or passworddd AAAA');
 const username = ref('angolo180');
 const password = ref('Angolo.180');
 
 async function login() {
-  if (loginError.value) {
+  if (loginError.value?.isShown) {
     return; // prevent multiple clicks
   }
   await fetch(`/api/auth/token`, {
@@ -62,17 +57,13 @@ async function login() {
     })}).then((response) => {
       console.log('after fetch');
       if(response.status == 400) {
-        loginError.value = true;
-        setTimeout(() => {
-          loginError.value = false;
-        }, 2000);
+        errorMessage.value = 'Invalid username or password sgrra';
         console.log('status 400');
         //loginError.value = false;
         throw new Error('Network response was not ok.');
       }
       console.log('status 200');
       if(response.status == 200) {
-        loginError.value = false;
         console.log(response);
         return response.json();
       }
