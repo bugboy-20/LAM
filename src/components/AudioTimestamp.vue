@@ -21,8 +21,8 @@ const play = () => {
   console.log('play')
 }
 
-const pause = (time: number | undefined) => { // time can be used to stamp the perfect time
-  if (time)
+const pause = (time?: number) => { // time can be used to stamp the perfect time
+  if (time !== undefined)
     currentTime.value = time
   clearInterval(interval)
   console.log('pause')

@@ -45,9 +45,6 @@ const username = ref('angolo180');
 const password = ref('Angolo.180');
 
 async function login() {
-  if (loginError.value?.isShown) {
-    return; // prevent multiple clicks
-  }
   await fetch(`/api/auth/token`, {
     mode: 'cors',
     method: 'POST',
@@ -58,6 +55,7 @@ async function login() {
       console.log('after fetch');
       if(response.status == 400) {
         errorMessage.value = 'Invalid username or password sgrra';
+        loginError.value?.show();
         console.log('status 400');
         //loginError.value = false;
         throw new Error('Network response was not ok.');

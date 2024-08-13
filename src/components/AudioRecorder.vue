@@ -9,8 +9,8 @@
 import { IonIcon, IonButton } from '@ionic/vue';
 import { micCircleOutline, stopCircleOutline } from 'ionicons/icons';
 import { GenericResponse, RecordingData, VoiceRecorder } from 'cap-voice-rec';
-import { ref, watch, computed } from 'vue';
-import {AudioInternal} from '@/interfaces';
+import { ref, watch } from 'vue';
+import { AudioInternal } from '@/interfaces';
 import AudioTimestamp from '@/components/AudioTimestamp.vue';
 const emit = defineEmits<{
   recordedAudio: [audio: AudioInternal] // named tuple syntax
@@ -46,6 +46,7 @@ const stopRecording = async () => VoiceRecorder.stopRecording()
       }
       emit('recordedAudio', audio)
       timestamp.value?.stop(0)
+      console.log('stopped recording')
     })
     .catch(error => console.error(error))
 
