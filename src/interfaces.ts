@@ -14,8 +14,14 @@ export interface AudioInternal {
   audioBase64: string;
   mimeType: string;
   duration: number;
+  coordinates: Coordinates | Promise<Coordinates>;
   metadata: Audio | null;
 }
+
+export type Coordinates = {
+  latitude: number;
+  longitude: number;
+};
 
 type Nullable<T> = {
   [P in keyof T]: T[P] | null;

@@ -10,7 +10,8 @@ import { IonIcon, IonButton } from '@ionic/vue';
 import { micCircleOutline, stopCircleOutline } from 'ionicons/icons';
 import { GenericResponse, RecordingData, VoiceRecorder } from 'cap-voice-rec';
 import { ref, watch } from 'vue';
-import { AudioInternal } from '@/interfaces';
+import { AudioInternal, Coordinates } from '@/interfaces';
+import { Geolocation, Position } from '@capacitor/geolocation';
 import AudioTimestamp from '@/components/AudioTimestamp.vue';
 const emit = defineEmits<{
   recordedAudio: [audio: AudioInternal] // named tuple syntax
@@ -25,7 +26,7 @@ const startRecording = async () => VoiceRecorder.startRecording()
 
 
 const stopRecording = async () => VoiceRecorder.stopRecording()
-    .then((result: RecordingData) => {
+    .then(async (result: RecordingData) => {
       recording.value = false
       /*
       const b64 = result.value.recordDataBase64;
@@ -34,7 +35,6 @@ const stopRecording = async () => VoiceRecorder.stopRecording()
       audioRef.oncanplaythrough = () => audioRef.play()
       audioRef.load()
       */
-      duration.value = 0
       let audio: AudioInternal = {
         id: '', //TODO: use hash
         audioBase64: result.value.recordDataBase64,
@@ -42,10 +42,12 @@ const stopRecording = async () => VoiceRecorder.stopRecording()
         createdAt: new Date(),
         updatedAt: null,
         duration: result.value.msDuration,
+        coordinates: getCoordinates(),
         metadata: null
       }
       emit('recordedAudio', audio)
       timestamp.value?.stop(0)
+      await audio.coordinates
       console.log('stopped recording')
     })
     .catch(error => console.error(error))
@@ -54,13 +56,18 @@ const recording = ref(false)
 const buttonIcon = ref(micCircleOutline)
 const buttonFunction = ref(startRecording)
 const maxDuration = 1 * 60 * 1000 // 1 minute
-const duration = ref(0)
 const timestamp = ref<typeof AudioTimestamp | null>(null)
 watch(recording, (newValue) => {
   buttonIcon.value = newValue ? stopCircleOutline : micCircleOutline
   buttonFunction.value = newValue ? stopRecording : startRecording
 })
 
+const getCoordinates = async () => {
+  const coordinates : Position = await Geolocation.getCurrentPosition();
+  const latitude = coordinates.coords.latitude;
+  const longitude = coordinates.coords.longitude;
+  return {latitude, longitude} as Coordinates;
+};
 </script>
 
 <style scoped>
