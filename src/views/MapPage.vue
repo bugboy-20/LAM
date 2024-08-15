@@ -11,19 +11,20 @@
 <script setup lang="ts">
 import { IonPage, IonContent } from '@ionic/vue';
 import { onMounted, ref, shallowRef } from 'vue';
-import { GoogleMap } from 'capacitor7-google-maps'; // TODO: https://vuejs.org/guide/extras/web-components.html#using-custom-elements-in-vue
+import { GoogleMap, Marker } from 'capacitor7-google-maps'; // TODO: https://vuejs.org/guide/extras/web-components.html#using-custom-elements-in-vue
 import {getCoordinates} from '@/utils/geolocation';
 import {Coordinates} from '@/interfaces';
+import { sendRequestWithToken, Handler } from '@/utils/requests';
 
+const token = localStorage.getItem('token');
 const mapRef = ref<HTMLElement>()
 const newMap = shallowRef<GoogleMap>()
 const cameraCoordinates = ref<Coordinates>({latitude: 0, longitude: 0})
 
+let markers: Marker[] = []
+
 async function createMap() {
-  console.log('Creating map...')
-  console.log(import.meta.env.VITE_MAPS_API_KEY)
   if (!mapRef.value) return
-  const coods = getCoordinates()
   newMap.value = await GoogleMap.create({
     id: 'my-cool-map',
     element: mapRef.value,
@@ -37,10 +38,19 @@ async function createMap() {
     },
   })
 
-  console.log('Map created!')
-  console.log(await newMap.value.getRawGoogleMapInstance())
 }
 
+const coordsToMarker = (coords: Coordinates) : Marker => {
+  return {
+    coordinate: {
+      lat: coords.latitude,
+      lng: coords.longitude,
+    },
+    title: 'Marker Title',
+    snippet: 'Marker Snippet',
+    icon: 'https://cdn-icons-png.flaticon.com/512/1165/1165814.png',
+  } as Marker
+}
 
 
 onMounted(() => {
@@ -54,6 +64,24 @@ onMounted(() => {
       zoom: 16,
     })
   });
+  console.log(`token: ${token}`)
+  const handlers : Handler[] = [
+    {
+      status: 200,
+      callback: async (req: Request, res: Response) => {
+        let audio : Coordinates[] = await res.json()
+        audio.forEach((coords) => {
+          markers.push(coordsToMarker(coords))
+        })
+        newMap.value?.addMarkers(markers)
+
+      }
+    }
+    ]
+  if(!token)
+    return
+
+  sendRequestWithToken('GET', '/api/audio/all', {}, token, handlers)
 
 })
 </script>

@@ -72,7 +72,9 @@ async function login() {
       if (!token) {
         throw new Error('No token found in response.');
       }
-      return router.push(`/tabs/?token=${token}`); // TODO: secure this
+      localStorage.setItem('token', token);
+      //return router.push(`/tabs/?token=${token}`); // TODO: secure this
+      return router.push(`/tabs`);
     }).catch((error) => {
       console.error('There has been a problem with your fetch operation:', error);
     })
