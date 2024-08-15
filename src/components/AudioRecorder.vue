@@ -11,7 +11,7 @@ import { micCircleOutline, stopCircleOutline } from 'ionicons/icons';
 import { GenericResponse, RecordingData, VoiceRecorder } from 'cap-voice-rec';
 import { ref, watch } from 'vue';
 import { AudioInternal, Coordinates } from '@/interfaces';
-import { Geolocation, Position } from '@capacitor/geolocation';
+import { getCoordinates } from '@/utils/geolocation';
 import AudioTimestamp from '@/components/AudioTimestamp.vue';
 const emit = defineEmits<{
   recordedAudio: [audio: AudioInternal] // named tuple syntax
@@ -47,8 +47,6 @@ const stopRecording = async () => VoiceRecorder.stopRecording()
       }
       emit('recordedAudio', audio)
       timestamp.value?.stop(0)
-      await audio.coordinates
-      console.log('stopped recording')
     })
     .catch(error => console.error(error))
 
@@ -62,12 +60,6 @@ watch(recording, (newValue) => {
   buttonFunction.value = newValue ? stopRecording : startRecording
 })
 
-const getCoordinates = async () => {
-  const coordinates : Position = await Geolocation.getCurrentPosition();
-  const latitude = coordinates.coords.latitude;
-  const longitude = coordinates.coords.longitude;
-  return {latitude, longitude} as Coordinates;
-};
 </script>
 
 <style scoped>
