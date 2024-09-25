@@ -17,16 +17,18 @@
       <IonButton @click="saveDatabase">Save Database</IonButton>
       <IonButton @click="readDatabase">Read Database</IonButton>
       <IonButton @click="removeDatabase">Remove Database</IonButton>
+      <Audio :audio="demoAudio" />
       <p>{{ fileText }}</p>
-      <Audio v-for="audio in audios" :audio="audio" :key="audio.hash" />
+      <div>
+        <Audio v-for="audio in audios" :audio="audio" :key="audio.hash" />
+      </div>
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonSelect } from '@ionic/vue';
-import ExploreContainer from '@/components/ExploreContainer.vue';
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonSelect, IonSelectOption } from '@ionic/vue';
 import {deleteAudio, readAllAudioMetadata, saveAudio} from '@/utils/storage';
 import {AudioInternal} from '@/interfaces';
 
@@ -36,6 +38,28 @@ const selected = ref<string>('1');
 const fileText = ref<string>('');
 
 const audios = ref<AudioInternal[]>([]);
+
+const demoAudio : AudioInternal = {
+  id: 345789,
+  hash: 'asdf123',
+  audioBase64: 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=',
+  mimeType: 'audio/wav',
+  duration: 1,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  coordinates: Promise.resolve({
+    latitude: 44.787197,
+    longitude: 11.457273,
+  }),
+  metadata: {
+    bpm: 32,
+    danceability: 0.3,
+    loudness: 0.6,
+    mood: {kek: true},
+    genre: {rock: 0.7},
+    instruments: {trumpet: 0.3}
+  }
+}
 
 const saveDatabase = async () => {
 
@@ -93,3 +117,8 @@ const removeDatabase = async () => {
 }
 
 </script>
+
+<style scoped>
+div {
+}
+</style>

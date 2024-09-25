@@ -179,7 +179,7 @@ async function saveAudioMetadata(audio: AudioInternal) {
       SET id = ?
       WHERE hash = ?;
     `;
-    const updateValues = [audio.id, audio.id];
+    const updateValues = [audio.id, audio.hash];
     const updateResult = await db.run({database: "audio_db", statement: updateAudio, values: updateValues});
     console.log(`Audio aggiornato con successo: ${updateResult.changes}`);
 
