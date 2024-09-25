@@ -8,14 +8,15 @@ export interface Audio {
 }
 
 export interface AudioInternal {
-  id: string;
+  hash: string;
+  id?: number; // this is given by the API
   createdAt: Date;
-  updatedAt: Date | null;
+  updatedAt?: Date;
   audioBase64: string;
   mimeType: string;
   duration: number;
-  coordinates: Coordinates | Promise<Coordinates>;
-  metadata: Audio | null;
+  coordinates: Promise<Coordinates>;
+  metadata?: Audio;
 }
 
 export type Coordinates = {

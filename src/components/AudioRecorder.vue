@@ -13,6 +13,7 @@ import { ref, watch } from 'vue';
 import { AudioInternal, Coordinates } from '@/interfaces';
 import { getCoordinates } from '@/utils/geolocation';
 import AudioTimestamp from '@/components/AudioTimestamp.vue';
+import hash from '@/utils/hash';
 const emit = defineEmits<{
   recordedAudio: [audio: AudioInternal] // named tuple syntax
 }>()
@@ -35,15 +36,14 @@ const stopRecording = async () => VoiceRecorder.stopRecording()
       audioRef.oncanplaythrough = () => audioRef.play()
       audioRef.load()
       */
+  
       let audio: AudioInternal = {
-        id: '', //TODO: use hash
+        id: hash(result.value.recordDataBase64),
         audioBase64: result.value.recordDataBase64,
         mimeType: result.value.mimeType,
         createdAt: new Date(),
-        updatedAt: null,
         duration: result.value.msDuration,
         coordinates: getCoordinates(),
-        metadata: null
       }
       emit('recordedAudio', audio)
       timestamp.value?.stop(0)

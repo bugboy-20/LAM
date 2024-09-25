@@ -25,7 +25,13 @@
 <script setup lang="ts">
 import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
 import { micOutline, volumeMediumOutline, planetOutline } from 'ionicons/icons';
+import { initializeDatabase } from '@/utils/storage';
+import { onMounted } from 'vue';
 
 const token = localStorage.getItem('token');
 //TODO icona selezionata diventa sharp?
+onMounted(async () => {
+  console.log('Initializing database');
+  console.log('Database initialized');
+});
 </script>

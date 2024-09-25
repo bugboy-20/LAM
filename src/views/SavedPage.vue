@@ -3,40 +3,93 @@
     <ion-content :fullscreen="true">
       <ion-header>
         <ion-toolbar>
-          <ion-title>Saved</ion-title>
+          <ion-title>
+            Saved
+            <IonSelect v-model="selected" placeholder="Select One">
+              <IonSelectOption value="1">Option 1</IonSelectOption>
+              <IonSelectOption value="2">Option 2</IonSelectOption>
+              <IonSelectOption value="3">Option 3</IonSelectOption>
+            </IonSelect>
+          </ion-title>
+
         </ion-toolbar>
       </ion-header>
-      {{ coordinates }}
-      <IonButton @click="getPosition">Get Position</IonButton>
-      <ExploreContainer name="Tab 3 page" />
+      <IonButton @click="saveDatabase">Save Database</IonButton>
+      <IonButton @click="readDatabase">Read Database</IonButton>
+      <IonButton @click="removeDatabase">Remove Database</IonButton>
+      <p>{{ fileText }}</p>
+      <Audio v-for="audio in audios" :audio="audio" :key="audio.hash" />
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { Geolocation } from '@capacitor/geolocation';
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton } from '@ionic/vue';
+import { ref } from 'vue';
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonSelect } from '@ionic/vue';
 import ExploreContainer from '@/components/ExploreContainer.vue';
-import {Coordinates} from '@/interfaces';
+import {deleteAudio, readAllAudioMetadata, saveAudio} from '@/utils/storage';
+import {AudioInternal} from '@/interfaces';
 
-const coordinates = ref<Coordinates>({latitude: 0, longitude: 0});
+import Audio from '@/components/Audio.vue';
 
-const getPosition = async () => {
-  const coords : Function = async () => Geolocation.getCurrentPosition()
-    .then((position) => {
-      console.log(position);
-      const latitude = position.coords.latitude;
-      const longitude = position.coords.longitude;
-      return {latitude, longitude};
-    })
-    .catch(async (err) => {
-      console.error(err);
-      return await coords();
-    });
-  console.log('Current', coordinates);
-  coordinates.value = await coords();
+const selected = ref<string>('1');
+const fileText = ref<string>('');
+
+const audios = ref<AudioInternal[]>([]);
+
+const saveDatabase = async () => {
+
+  const dummyAudio1 : AudioInternal = {
+    hash: '123',
+    audioBase64: '123',
+    mimeType: 'audio/wav',
+    createdAt: new Date(),
+    duration: 1000,
+    coordinates: Promise.resolve({
+      latitude: 44.787197,
+      longitude: 11.457273,
+    }),
+  }
+
+  const dummyAudio2 : AudioInternal = {
+    hash: '456',
+    audioBase64: '456',
+    mimeType: 'audio/wav',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    duration: 2000,
+    coordinates: Promise.resolve({
+      latitude: 44.787197,
+      longitude: 11.457273,
+    }),
+    id: 1,
+    metadata: {
+      bpm: 120,
+      danceability: 0.45,
+      instruments: {'guitar':0.6, 'bass':0.5},
+      genre: {'rock':0.8, 'pop':0.2},
+      loudness: -10,
+      mood: {'happy':0.7, 'sad':0.3}
+    }}
+
+  await saveAudio(dummyAudio1);
+  await saveAudio(dummyAudio2);
+  await readDatabase();
 };
+const readDatabase = async () => {
+  readAllAudioMetadata().then((result) => {
+    audios.value = result;
+    fileText.value = JSON.stringify(audios.value);
+    console.log(audios.value);
+  });
+}
 
-onMounted(getPosition);
+const removeDatabase = async () => {
+  audios.value.forEach(async (audio) => {
+    await deleteAudio(audio.hash)
+    console.log(`audio ${audio.hash} eliminato`)
+  })
+  await readDatabase();
+}
+
 </script>

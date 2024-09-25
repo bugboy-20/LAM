@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import { createApp, ref } from 'vue'
 import App from './App.vue'
 import router from './router';
 
@@ -33,11 +33,14 @@ import '@ionic/vue/css/palettes/dark.system.css';
 
 /* Theme variables */
 import './theme/variables.css';
+import {initializeDatabase} from './utils/storage';
+
 
 const app = createApp(App)
   .use(IonicVue)
   .use(router);
 
 router.isReady().then(() => {
+  initializeDatabase();
   app.mount('#app');
 });

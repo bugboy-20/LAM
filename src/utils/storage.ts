@@ -1,0 +1,208 @@
+import { CapacitorSQLite } from '@capacitor-community/sqlite';
+import { AudioInternal } from '@/interfaces';
+import { Capacitor } from '@capacitor/core';
+import { SQLiteConnection } from '@capacitor-community/sqlite';
+import { applyPolyfills, defineCustomElements as jeepSqlite } from 'jeep-sqlite/loader';
+import { JeepSqlite } from 'jeep-sqlite/dist/components/jeep-sqlite';
+/*
+async function saveAudioFile(fileName: string, audioData: string) {
+  console.log(await Filesystem.writeFile({
+    path: fileName,
+    data: audioData, // base64 
+    directory: Directory.Data,
+  }));
+}
+
+async function getAudioFile(fileName: string) {
+  const result = await Filesystem.readFile({
+    path: fileName,
+    directory: Directory.Data,
+  });
+  return result.data; // Base64 o binario
+}
+
+async function deleteAudioFile(fileName: string) {
+  await Filesystem.deleteFile({
+    path: fileName
+  });
+}
+*/
+
+async function initializeDatabase() {
+  try {
+    // applyPolyfills().then(() => {jeepSqlite(window);});
+    const platform = Capacitor.getPlatform();
+    const sqlite: SQLiteConnection = new SQLiteConnection(CapacitorSQLite)
+    if(platform === "web") {
+      // Create the 'jeep-sqlite' Stencil component
+      customElements.define("jeep-sqlite", JeepSqlite)
+      const jeepSqliteEl = document.createElement("jeep-sqlite")
+      document.body.appendChild(jeepSqliteEl)
+      await customElements.whenDefined("jeep-sqlite")
+      //console.log(`after customElements.whenDefined`)
+      // console.log(sqlite , '#sqlite')
+      // Initialize the Web store
+      await sqlite.initWebStore()
+      //console.log(`after initWebStore22`)
+    }
+
+    const db = CapacitorSQLite;
+    await CapacitorSQLite.createConnection({
+      database: "audio_db",
+      version: 1,
+      encrypted: false,
+      readonly: false,
+    });
+    await CapacitorSQLite.open({database: "audio_db", readonly: false});
+
+    console.log("Database aperto con successo!");
+    // Creare una tabella per i metadati audio
+    const createAudioTable = `
+      CREATE TABLE IF NOT EXISTS audio (
+        hash TEXT PRIMARY KEY NOT NULL,
+        id INTEGER KEY UNIQUE,
+        duration INTEGER NOT NULL,
+        latitude REAL NOT NULL,
+        longitude REAL NOT NULL,
+        created_at TEXT DEFAULT (datetime('now')),
+        updated_at TEXT DEFAULT NULL,
+        audio_base64 TEXT NOT NULL,
+        mime_type TEXT NOT NULL
+      )
+    `;
+
+    const createAudioMetadataTable = `
+      CREATE TABLE IF NOT EXISTS audio_metadata (
+        id INTEGER KEY,
+        bpm INTEGER NOT NULL,
+        danceability REAL NOT NULL,
+        loudness REAL NOT NULL,
+        mood TEXT NOT NULL,
+        genre TEXT NOT NULL,
+        instruments TEXT NOT NULL,
+        FOREIGN KEY (id) REFERENCES audio(id) ON DELETE CASCADE
+      )
+    `;
+
+    const tables = [createAudioTable, createAudioMetadataTable];
+    for (const table of tables) {
+      const result = await db.execute({database: "audio_db", statements: table});
+      console.log(`Tabella creata con successo: ${result.changes}`);
+    }
+
+    console.log("Database e tabella creati con successo!");
+
+  } catch (error) {
+    console.error("Errore nell'inizializzazione del database:", error);
+  }
+}
+
+async function readAllAudioMetadata() {
+  try {
+    const db = CapacitorSQLite;
+    const query = `
+      SELECT * FROM audio LEFT JOIN audio_metadata ON audio.id = audio_metadata.id
+      ORDER BY audio.created_at DESC
+    `;
+    const result = await db.query({database: "audio_db", statement: query});
+    const audios : AudioInternal[] | undefined = result.values?.map((audio) => {
+      return {
+        hash: audio.hash as string,
+        id: audio.id as number,
+        duration: audio.duration,
+        coordinates: Promise.resolve({latitude: audio.latitude, longitude: audio.longitude}),
+        createdAt: new Date(audio.created_at),
+        updatedAt: audio.updated_at ? new Date(audio.updated_at) : undefined,
+        audioBase64: audio.audio_base64 as string,
+        mimeType: audio.mime_type as string,
+        metadata: audio.id ?{
+          bpm: audio.bpm as number,
+          danceability: JSON.parse(audio.danceability) as number,
+          loudness: audio.loudness as number,
+          mood: JSON.parse(audio.mood),
+          genre: JSON.parse(audio.genre),
+          instruments: JSON.parse(audio.instruments),
+        } : undefined
+      }
+    });
+    if (!audios) {
+      console.log("Non ci sono audio salvati.");
+      return [];
+    }
+    return audios;
+  } catch (error) {
+    console.error("Errore nel recupero dei metadati audio:", error);
+    return [];
+  }
+}
+
+async function saveAudio(audioData: AudioInternal) {
+  try {
+    const db = CapacitorSQLite;
+    const query = `
+      INSERT INTO audio (hash, duration, latitude, longitude, created_at, updated_at, audio_base64, mime_type)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+    `;
+    const coordinates = await audioData.coordinates;
+    const values = [audioData.hash, audioData.duration, coordinates.latitude, coordinates.longitude, audioData.createdAt.toString(), audioData.updatedAt?.toString(), audioData.audioBase64, audioData.mimeType];
+    const result = await db.run({database: "audio_db", statement: query, values});
+    console.log(`Audio salvato ${audioData.hash} con successo: ${JSON.stringify(result.changes)}`);
+
+    if(audioData.metadata)
+      await saveAudioMetadata(audioData);
+
+  } catch (error) {
+    console.error("Errore nel salvataggio dell'audio:", error);
+  }
+
+}
+
+async function saveAudioMetadata(audio: AudioInternal) {
+  try {
+    const db = CapacitorSQLite;
+
+
+  
+    const query = `
+      INSERT INTO audio_metadata (id, bpm, danceability, loudness, mood, genre, instruments)
+      VALUES (?, ?, ?, ?, ?, ?, ?);
+    `;
+    const audioData = audio.metadata;
+    if(!audioData)
+      return;
+    const values = [audio.id, audioData.bpm, JSON.stringify(audioData.danceability), audioData.loudness, JSON.stringify(audioData.mood), JSON.stringify(audioData.genre), JSON.stringify(audioData.instruments)];
+    const result = await db.run({database: "audio_db", statement: query, values});
+    console.log(`Metadati audio salvati con successo: ${result.changes}`);
+    // update audio with metadata
+    const updateAudio = `
+      UPDATE audio
+      SET id = ?
+      WHERE hash = ?;
+    `;
+    const updateValues = [audio.id, audio.id];
+    const updateResult = await db.run({database: "audio_db", statement: updateAudio, values: updateValues});
+    console.log(`Audio aggiornato con successo: ${updateResult.changes}`);
+
+
+  } catch (error) {
+    console.error("Errore nel salvataggio dei metadati audio:", error);
+  }
+}
+
+async function deleteAudio(hash: string) {
+  try {
+    const db = CapacitorSQLite;
+    const query = `
+      DELETE FROM audio
+      WHERE hash = ?;
+    `;
+    const result = await db.run({database: "audio_db", statement: query, values: [hash], transaction: true});
+    console.log(`Audio eliminato con successo: ${result.changes}`);
+    // delete metadata
+  } catch (error) {
+    console.error("Errore nell'eliminazione dell'audio:", error);
+  }
+}
+
+
+export { initializeDatabase, readAllAudioMetadata, saveAudio, deleteAudio};
