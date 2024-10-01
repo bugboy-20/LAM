@@ -15,8 +15,8 @@ import { GoogleMap, Marker } from 'capacitor7-google-maps'; // TODO: https://vue
 import {getCoordinates} from '@/utils/geolocation';
 import {Coordinates} from '@/interfaces';
 import { sendRequestWithToken, Handler } from '@/utils/requests';
+import {getToken} from '@/utils/storage';
 
-const token = localStorage.getItem('token');
 const mapRef = ref<HTMLElement>()
 const newMap = shallowRef<GoogleMap>()
 const cameraCoordinates = ref<Coordinates>({latitude: 0, longitude: 0})
@@ -64,11 +64,10 @@ onMounted(() => {
       zoom: 16,
     })
   });
-  console.log(`token: ${token}`)
   const handlers : Handler[] = [
     {
       status: 200,
-      callback: async (req: Request, res: Response) => {
+      callback: async (_: Request, res: Response) => {
         let audio : Coordinates[] = await res.json()
         audio.forEach((coords) => {
           markers.push(coordsToMarker(coords))
@@ -78,10 +77,8 @@ onMounted(() => {
       }
     }
     ]
-  if(!token)
-    return
 
-  sendRequestWithToken('GET', '/api/audio/all', {}, token, handlers)
+  sendRequestWithToken('GET', '/api/audio/all', {}, handlers)
 
 })
 </script>

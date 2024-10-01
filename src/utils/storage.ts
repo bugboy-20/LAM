@@ -4,7 +4,9 @@ import { Capacitor } from '@capacitor/core';
 import { SQLiteConnection } from '@capacitor-community/sqlite';
 import { Preferences } from '@capacitor/preferences';
 import { JeepSqlite } from 'jeep-sqlite/dist/components/jeep-sqlite';
+import { renewToken } from './requests';
 /*
+ *
 async function saveAudioFile(fileName: string, audioData: string) {
   console.log(await Filesystem.writeFile({
     path: fileName,
@@ -203,4 +205,25 @@ async function deleteAudio(hash: string) {
     console.error("Errore nell'eliminazione dell'audio:", error);
   }
 }
-export { initializeDatabase, readAllAudioMetadata, saveAudio, deleteAudio};
+
+async function setToken(token: string) {
+  await Preferences.set({key: "token", value: token});
+}
+
+async function getToken() {
+  const token = await Preferences.get({key: "token"});
+  return token.value ?? await renewToken();
+}
+
+async function saveUserLogin(username: string, password: string) {
+  await Preferences.set({key: "username", value: username});
+  await Preferences.set({key: "password", value: password});
+}
+
+async function getUserLogin() {
+  const username = await Preferences.get({key: "username"});
+  const password = await Preferences.get({key: "password"});
+  return {username: username.value, password: password.value};
+}
+
+export { initializeDatabase, readAllAudioMetadata, saveAudio, deleteAudio, setToken, getToken, saveUserLogin, getUserLogin};

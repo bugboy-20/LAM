@@ -1,3 +1,7 @@
+
+import { Preferences } from "@capacitor/preferences";
+import { getUserLogin } from "./storage";
+
 export type Handler = {
   status: number;
   callback: (req: Request, res: Response) => Promise<void>;
@@ -16,6 +20,10 @@ const sendRequest = async (method: string, url: string, headers: any, body: any,
 
   await fetch(request)
     .then((response) => {
+      if (response.status === 401) {
+        renewToken();
+        sendRequestWithToken(method, url, body, handlers);
+      }
       const handler = handlers.find((handler) => handler.status === response.status);
       if (handler) {
         handler.callback(request, response);
@@ -26,7 +34,11 @@ const sendRequest = async (method: string, url: string, headers: any, body: any,
     });
 }
 
-const sendRequestWithToken = async (method: string, url: string, body: any, token: string, handlers: Handler[]) => {
+const sendRequestWithToken = async (method: string, url: string, body: any, handlers: Handler[]) => {
+  const token = (await Preferences.get({key: 'token'})).value;
+  if (!token) {
+    console.error('Token not found'); // This should never happen
+  }
   const headers = {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`
@@ -34,4 +46,55 @@ const sendRequestWithToken = async (method: string, url: string, body: any, toke
   await sendRequest(method, url, headers, body, handlers);
 }
 
-export { sendRequest, sendRequestWithToken };
+const logUserIn = async (username: string, password: string) => {
+  await Preferences.set({key: 'username', value: username});
+  await Preferences.set({key: 'password', value: password});
+
+  renewToken(username, password);
+}
+
+const renewToken = async (username?: string, password?: string) => {
+  if (!username || !password) {
+    const user = await getUserLogin();
+    username = user.username ?? '';
+    password = user.password ?? '';
+  }
+
+
+  const token = await fetch(`/api/auth/token`, {
+    mode: 'cors',
+    method: 'POST',
+    body: new URLSearchParams({
+      username: username,
+      password: password,
+    })}).then((response) => {
+      console.log('after fetch');
+      if(response.status == 400) {
+        throw new Error('Invalid username or password');
+      }
+      console.log('status 200');
+      if(response.status == 200) {
+        console.log(response);
+        return response.json();
+      }
+      console.log(response);
+    }).then((json) => {
+      console.log(json);
+      const token = json.client_secret;
+      if (!token) {
+        throw new Error('No token found in response.');
+      }
+      Preferences.set({key: 'token', value: token});
+      return token as string;
+      //return router.push(`/tabs/?token=${token}`); // TODO: secure this
+    }).catch((error) => {
+      console.error('There has been a problem with your fetch operation:', error);
+    })
+    .catch((error) => {
+      console.error('There has been a problem with your fetch operation:', error);
+    }) ?? ''; // This is a workaround to make TypeScript happy
+    return token;
+ }
+
+
+export { sendRequest, sendRequestWithToken, logUserIn, renewToken };

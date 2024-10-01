@@ -38,6 +38,7 @@ import {
 import { useRouter } from 'vue-router';
 import { ref } from 'vue';
 import Message from '@/components/Message.vue';
+import {logUserIn} from '@/utils/requests';
 const router = useRouter();
 const loginError = ref< typeof Message | null>(null);
 const errorMessage = ref('Invalid username or passworddd AAAA');
@@ -45,41 +46,13 @@ const username = ref('angolo180');
 const password = ref('Angolo.180');
 
 async function login() {
-  await fetch(`/api/auth/token`, {
-    mode: 'cors',
-    method: 'POST',
-    body: new URLSearchParams({
-      username: username.value,
-      password: password.value,
-    })}).then((response) => {
-      console.log('after fetch');
-      if(response.status == 400) {
-        errorMessage.value = 'Invalid username or password sgrra';
-        loginError.value?.show();
-        console.log('status 400');
-        //loginError.value = false;
-        throw new Error('Network response was not ok.');
-      }
-      console.log('status 200');
-      if(response.status == 200) {
-        console.log(response);
-        return response.json();
-      }
-      console.log(response);
-    }).then((json) => {
-      console.log(json);
-      const token = json.client_secret;
-      if (!token) {
-        throw new Error('No token found in response.');
-      }
-      localStorage.setItem('token', token);
-      //return router.push(`/tabs/?token=${token}`); // TODO: secure this
-      return router.push(`/tabs`);
-    }).catch((error) => {
-      console.error('There has been a problem with your fetch operation:', error);
-    })
-    .catch((error) => {
-      console.error('There has been a problem with your fetch operation:', error);
-    });
+  try {
+    await logUserIn(username.value, password.value);
+    return router.push(`/tabs`);
+  } catch (error) {
+    errorMessage.value = JSON.stringify(error); // error.message; mi da type error
+    loginError.value?.show();
+  }
+  await logUserIn(username.value, password.value);
 }
 </script>
