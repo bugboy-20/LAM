@@ -42,7 +42,7 @@ const audios = ref<AudioInternal[]>([]);
 const demoAudio : AudioInternal = {
   id: 345789,
   hash: 'asdf123',
-  audioBase64: 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=',
+  audioBase64: 'data:audio/wav;base64,T2dnUwACAAAAAAAAAACRkiwWAAAAAFZdRLsBE09wdXNIZWFkAQI4AUSsAAAAAABPZ2dTAAAAAAAAAAAAAJGSLBYBAAAA3WRPNAE5T3B1c1RhZ3MPAAAAbGlib3B1cyB1bmtub3duAQAAABYAAABFTkNPREVSPU1vemlsbGExMzAuMC4xT2dnUwAAADwAAAAAAACRkiwWAgAAAGiOVDMeAwMD//8J/yz/LP8s/yv/LP8s/yv/Kv8w/0L/Qv9C/P/+/P/+/P/+/Hr5nS3Me3hpknZReJqNpI2N615+K4YTLo6npdx7r0OaHI9IEXLz2vsp0FSzjIa8gJ76FPJA+dSodYHXWeM1np5LXjqE4GOgUNfyelyDcEzlONDse8r17zPtKSdCS+XY58sYmrsVMqUMKrMEa1QH41E+S9BfwDd+h1rrYwiumUoO0FD6Sa7a76PoDDBa9YbkVLMPglJ1fBO85O5rznf8nDHXYiH/2C+ycsoe89RZVshVgMrj7ar91Nw9I3b+X+HUCThsnTAwa2eIqC7wW7KVC/kO8hkcsXxLW0SNNvCPTNpapgiCvoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAChgdcvc80apRswTbLIuUuol7eMWdX0BUIIzCyo0JyFFGOPhkCCcp8jAvJrXU2U7BKs3R9CgVDeg0RAFj6lcyuI0dKbwJe1g5dcOyzWvutlfQ8jVPm3OO/kbAQYS000vN1x+kUvDfQ7/HnRatSO9jjR8Z7lWqy8olhEcMSZScd2gaRXtuCFvjSzbhU4PihNlJtVyyEr52CsAJMLyta4qEvuxifeoSiP8de//FjVDK7ZmNah1F5oy9Mrqxrxk5INma6HQ6q+ouFwkuseMERcsI9Jz8TP245mfzxPcYyqNi9x0PqoxyKMtQtQ4pm7lUb22TImRmUBcuT3eloYY2u4UwJ/BXRHvnfprijjKlvHy117301DfcEaF54iBKqjI9J2B4Rs3GDrJDqamJ3ryMqDKWuPCov2PAMKctL7zMfZ2FkmMIe3lNm50uKjFLOrRzcL9P9Wq46YEuz+NdZ58cPhJwaBzmd/MI0G39Sl2PIgoN8WJ8LY42l459cTV7Ku/tOxsjNToR+U3CSzIs5otBEbVDlIhdarBYlNN71FxyZFt1wQ2qsoweGt25ULPfGNf2jlPUy2ga1zUkva7PC8scsFbn151kMJqoinS8L+aUsKTy66eRnkgQXth7R5Nwa0T/1J1haHzV2hWeettcmhPvRpVS1jl1gF2VA4yvGTrbhQhdTCNo2zuysM1rd2YgqXh0IsypCaWja3/RclQvYQxbysUMnYon9gesyxrBom/r8U7vtg/lavfKp2K1PARGzZh98UYXE7oHqWJ1O0eDpYkhFTX4FHT358DfCWyYljxXTfROguIfmUKtdaMfebzenjnbF4qlQ2oa0bX7y45CZOHYzEzOkZsKtkeBeoZx82KX0W1uoVFx8qnkzYec',
   mimeType: 'audio/wav',
   duration: 1,
   createdAt: new Date(),
@@ -109,16 +109,20 @@ const readDatabase = async () => {
 }
 
 const removeDatabase = async () => {
-  audios.value.forEach(async (audio) => {
-    await deleteAudio(audio.hash)
-    console.log(`audio ${audio.hash} eliminato`)
-  })
-  await readDatabase();
-}
+  try {
+    for (const audio of audios.value) {
+      await deleteAudio(audio.hash);
+      console.log(`audio ${audio.hash} eliminato`);
+    }
+    await readDatabase();
+  } catch (error) {
+    console.error("Errore nell'eliminazione dell'audio:", error);
+  }
+};
+
+
 
 </script>
 
 <style scoped>
-div {
-}
 </style>
