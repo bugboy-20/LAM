@@ -15,7 +15,6 @@ import { GoogleMap, Marker } from 'capacitor7-google-maps'; // TODO: https://vue
 import {getCoordinates} from '@/utils/geolocation';
 import {Coordinates} from '@/interfaces';
 import { sendRequestWithToken, Handler } from '@/utils/requests';
-import {getToken} from '@/utils/storage';
 
 const mapRef = ref<HTMLElement>()
 const newMap = shallowRef<GoogleMap>()
