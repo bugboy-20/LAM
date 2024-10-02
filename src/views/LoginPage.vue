@@ -46,13 +46,12 @@ const username = ref('angolo180');
 const password = ref('Angolo.180');
 
 async function login() {
-  try {
-    await logUserIn(username.value, password.value);
-    return router.push(`/tabs`);
-  } catch (error) {
-    errorMessage.value = JSON.stringify(error); // error.message; mi da type error
+  logUserIn(username.value, password.value).then(() => {
+    router.push(`/tabs`);
+  }).catch((error) => {
+    console.log(`passo per il catch: ${error}`);
+    errorMessage.value = error instanceof Error ? error.message : JSON.stringify(error);
     loginError.value?.show();
-  }
-  await logUserIn(username.value, password.value);
+  });
 }
 </script>

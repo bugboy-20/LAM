@@ -50,7 +50,7 @@ const logUserIn = async (username: string, password: string) => {
   await Preferences.set({key: 'username', value: username});
   await Preferences.set({key: 'password', value: password});
 
-  renewToken(username, password);
+  await renewToken(username, password);
 }
 
 const renewToken = async (username?: string, password?: string) => {
@@ -70,7 +70,7 @@ const renewToken = async (username?: string, password?: string) => {
     })}).then((response) => {
       console.log('after fetch');
       if(response.status == 400) {
-        throw new Error('Invalid username or password');
+        return Promise.reject(new Error('Invalid username or password'));
       }
       console.log('status 200');
       if(response.status == 200) {
@@ -82,16 +82,11 @@ const renewToken = async (username?: string, password?: string) => {
       console.log(json);
       const token = json.client_secret;
       if (!token) {
-        throw new Error('No token found in response.');
+        return Promise.reject(new Error('No token found in response.'));
       }
       Preferences.set({key: 'token', value: token});
       return token as string;
       //return router.push(`/tabs/?token=${token}`); // TODO: secure this
-    }).catch((error) => {
-      console.error('There has been a problem with your fetch operation:', error);
-    })
-    .catch((error) => {
-      console.error('There has been a problem with your fetch operation:', error);
     }) ?? ''; // This is a workaround to make TypeScript happy
     return token;
  }
