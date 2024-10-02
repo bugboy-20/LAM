@@ -19,13 +19,12 @@ import { AudioInternal } from '@/interfaces';
 const props = defineProps<{audio: AudioInternal}>()
 const emit = defineEmits<{(e: 'hide', id: string): void}>()
 
-console.log(props.audio) //TODO does the audio as been already saved in the database?
 
 const uploadAudio = () => { // TODO
   console.log('uploading audio')
 }
 
 const deleteAudio = () => {
-  emit('hide', props.audio.id)
+  emit('hide', props.audio.hash)
 }
 </script>

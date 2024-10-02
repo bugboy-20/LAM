@@ -18,7 +18,6 @@
       <IonButton @click="readDatabase">Read Database</IonButton>
       <IonButton @click="removeDatabase">Remove Database</IonButton>
       <Audio :audio="demoAudio" />
-      <p>{{ fileText }}</p>
       <div>
         <Audio v-for="audio in audios" :audio="audio" :key="audio.hash" />
       </div>
