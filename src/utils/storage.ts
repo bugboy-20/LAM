@@ -1,5 +1,5 @@
 import { CapacitorSQLite, CapacitorSQLitePlugin } from '@capacitor-community/sqlite';
-import { Audio, AudioInternal } from '@/interfaces';
+import { AudioInternal } from '@/interfaces';
 import { Capacitor } from '@capacitor/core';
 import { SQLiteConnection } from '@capacitor-community/sqlite';
 import { Preferences } from '@capacitor/preferences';
@@ -46,11 +46,8 @@ async function initializeDatabase() {
       const jeepSqliteEl = document.createElement("jeep-sqlite")
       document.body.appendChild(jeepSqliteEl)
       await customElements.whenDefined("jeep-sqlite")
-      //console.log(`after customElements.whenDefined`)
-      // console.log(sqlite , '#sqlite')
       // Initialize the Web store
       await sqlite.initWebStore()
-      //console.log(`after initWebStore22`)
     }
 
     const db = CapacitorSQLite;
@@ -62,7 +59,7 @@ async function initializeDatabase() {
     });
     await CapacitorSQLite.open({database: "audio_db", readonly: false});
 
-    console.log("Database aperto con successo!");
+    //console.log("Database aperto con successo!");
     // Creare una tabella per i metadati audio
     const createAudioTable = `
       CREATE TABLE IF NOT EXISTS audio (
@@ -94,10 +91,10 @@ async function initializeDatabase() {
     const tables = [createAudioTable, createAudioMetadataTable];
     for (const table of tables) {
       const result = await db.execute({database: "audio_db", statements: table});
-      console.log(`Tabella creata con successo: ${result.changes}`);
+      //console.log(`Tabella creata con successo: ${result.changes}`);
     }
 
-    console.log("Database e tabella creati con successo!");
+    //console.log("Database e tabella creati con successo!");
 
   } catch (error) {
     console.error("Errore nell'inizializzazione del database:", error);
@@ -179,8 +176,7 @@ async function saveAudio(audioData: AudioInternal) {
       `;
       const coordinates = await audioData.coordinates;
       const values = [audioData.hash, audioData.duration, coordinates.latitude, coordinates.longitude, audioData.createdAt.toString(), audioData.updatedAt?.toString(), audioData.audioBase64, audioData.mimeType];
-      const result = await db.run({database: "audio_db", statement: query, values});
-      console.log(`Audio salvato ${audioData.hash} con successo: ${JSON.stringify(result.changes)}`);
+      await db.run({database: "audio_db", statement: query, values});
     }
     if(audioData.metadata)
       await saveAudioMetadata(audioData);
@@ -201,8 +197,7 @@ async function saveAudioMetadata(audio: AudioInternal) {
       WHERE hash = ?;
     `;
     const updateValues = [audio.id, audio.hash];
-    const updateResult = await db.run({database: "audio_db", statement: updateAudio, values: updateValues});
-    console.log(`Audio aggiornato con successo: ${updateResult.changes}`);
+    await db.run({database: "audio_db", statement: updateAudio, values: updateValues});
 
 
   
@@ -214,8 +209,7 @@ async function saveAudioMetadata(audio: AudioInternal) {
     if(!audioData)
       return;
     const values = [audio.id, audioData.bpm, JSON.stringify(audioData.danceability), audioData.loudness, JSON.stringify(audioData.mood), JSON.stringify(audioData.genre), JSON.stringify(audioData.instruments)];
-    const result = await db.run({database: "audio_db", statement: query, values});
-    console.log(`Metadati audio salvati con successo: ${result.changes}`);
+    await db.run({database: "audio_db", statement: query, values});
 
 
   } catch (error) {
@@ -231,7 +225,6 @@ async function deleteAudio(hash: string) {
       WHERE hash = ?;
     `;
     const result = await db.run({database: "audio_db", statement: query, values: [hash], transaction: true});
-    console.log(`Audio eliminato con successo: ${result.changes}`);
     return result
   } catch (error) {
     console.error("Errore nell'eliminazione dell'audio:", error);

@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 // according the vue docs this layer of abstraction is not ok for optimations
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch } from 'vue';
 import { AudioInternal } from '@/interfaces';
 import AudioPreview from '@/components/AudioPreview.vue';
 import AudioUploaded from './AudioUploaded.vue';
@@ -22,7 +22,6 @@ import AudioTimestamp from '@/components/AudioTimestamp.vue';
 import MetadataInfo from '@/components/MetadataInfo.vue';
 import { IonButton, IonIcon } from '@ionic/vue';
 import {playCircleOutline, pauseCircleOutline} from 'ionicons/icons';
-import {saveAudio} from '@/utils/storage';
 
 const props = defineProps<{audio: AudioInternal}>()
 
@@ -35,10 +34,6 @@ const metadata = ref(props.audio.metadata)
 
 watch(() => props.audio, (_) => {
   visible.value = true
-})
-
-onMounted(() => {
-  saveAudio(props.audio)
 })
 
 const playAudio = () => {

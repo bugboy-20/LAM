@@ -14,6 +14,7 @@ import { AudioInternal, Coordinates } from '@/interfaces';
 import { getCoordinates } from '@/utils/geolocation';
 import AudioTimestamp from '@/components/AudioTimestamp.vue';
 import hash from '@/utils/hash';
+import {saveAudio} from '@/utils/storage';
 const emit = defineEmits<{
   recordedAudio: [audio: AudioInternal] // named tuple syntax
 }>()
@@ -38,7 +39,7 @@ const stopRecording = async () => VoiceRecorder.stopRecording()
       */
   
       let audio: AudioInternal = {
-        id: hash(result.value.recordDataBase64),
+        hash: hash(result.value.recordDataBase64),
         audioBase64: result.value.recordDataBase64,
         mimeType: result.value.mimeType,
         createdAt: new Date(),
@@ -47,6 +48,7 @@ const stopRecording = async () => VoiceRecorder.stopRecording()
       }
       emit('recordedAudio', audio)
       timestamp.value?.stop(0)
+      saveAudio(audio).then(() => console.log('audio saved'))
     })
     .catch(error => console.error(error))
 

@@ -15,6 +15,7 @@
 import { IonButton, IonIcon, } from '@ionic/vue';
 import {cloudUploadOutline, trashOutline} from 'ionicons/icons';
 import { AudioInternal } from '@/interfaces';
+import { deleteAudio as deleteAudioDB } from '@/utils/storage';
 
 const props = defineProps<{audio: AudioInternal}>()
 const emit = defineEmits<{(e: 'hide', id: string): void}>()
@@ -26,5 +27,6 @@ const uploadAudio = () => { // TODO
 
 const deleteAudio = () => {
   emit('hide', props.audio.hash)
+  deleteAudioDB(props.audio.hash)
 }
 </script>
