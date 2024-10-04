@@ -1,5 +1,5 @@
-import { CapacitorSQLite } from '@capacitor-community/sqlite';
-import { AudioInternal } from '@/interfaces';
+import { CapacitorSQLite, CapacitorSQLitePlugin } from '@capacitor-community/sqlite';
+import { Audio, AudioInternal } from '@/interfaces';
 import { Capacitor } from '@capacitor/core';
 import { SQLiteConnection } from '@capacitor-community/sqlite';
 import { Preferences } from '@capacitor/preferences';
@@ -29,6 +29,11 @@ async function deleteAudioFile(fileName: string) {
   });
 }
 */
+
+enum DbAudio { Found,
+ FoundWithMetadata,
+ NotFound
+}
 
 async function initializeDatabase() {
   try {
@@ -138,18 +143,45 @@ async function readAllAudioMetadata() {
   }
 }
 
+async function isAudioSaved(db: CapacitorSQLitePlugin, hash: string) {
+  try {
+    const query = `
+      SELECT * FROM audio
+      WHERE hash = ?
+    `;
+    const result = await db.query({database: "audio_db", statement: query, values: [hash]});
+    if (result.values && result.values.length > 0) {
+      const audio = result.values[0] as AudioInternal;
+      if(audio.id)
+        return DbAudio.FoundWithMetadata;
+      return DbAudio.Found;
+    }
+    return DbAudio.NotFound;
+  } catch (error) {
+    console.error("Errore nel recupero dell'audio:", error);
+    return false;
+  }
+}
+
 async function saveAudio(audioData: AudioInternal) {
   try {
     const db = CapacitorSQLite;
-    const query = `
-      INSERT INTO audio (hash, duration, latitude, longitude, created_at, updated_at, audio_base64, mime_type)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?);
-    `;
-    const coordinates = await audioData.coordinates;
-    const values = [audioData.hash, audioData.duration, coordinates.latitude, coordinates.longitude, audioData.createdAt.toString(), audioData.updatedAt?.toString(), audioData.audioBase64, audioData.mimeType];
-    const result = await db.run({database: "audio_db", statement: query, values});
-    console.log(`Audio salvato ${audioData.hash} con successo: ${JSON.stringify(result.changes)}`);
 
+    const audioStatus = await isAudioSaved(db, audioData.hash);
+    if((audioStatus === DbAudio.Found && !audioData.metadata) || audioStatus === DbAudio.FoundWithMetadata) {
+      console.log("Audio già salvato.");
+      return;
+    }
+    if(audioStatus != DbAudio.Found) {
+      const query = `
+        INSERT INTO audio (hash, duration, latitude, longitude, created_at, updated_at, audio_base64, mime_type)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+      `;
+      const coordinates = await audioData.coordinates;
+      const values = [audioData.hash, audioData.duration, coordinates.latitude, coordinates.longitude, audioData.createdAt.toString(), audioData.updatedAt?.toString(), audioData.audioBase64, audioData.mimeType];
+      const result = await db.run({database: "audio_db", statement: query, values});
+      console.log(`Audio salvato ${audioData.hash} con successo: ${JSON.stringify(result.changes)}`);
+    }
     if(audioData.metadata)
       await saveAudioMetadata(audioData);
 
