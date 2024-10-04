@@ -19,9 +19,13 @@ const sendRequest = async (method: string, url: string, headers: any, body: any,
   });
 
   await fetch(request)
-    .then((response) => {
+    .then(async (response) => {
       if (response.status === 401) {
-        renewToken();
+        const errMsg = (await response.json()).detail;
+        if (errMsg != "Not authenticated" )
+          return Promise.reject(new Error(errMsg));
+
+        await renewToken();
         sendRequestWithToken(method, url, body, handlers);
       }
       const handler = handlers.find((handler) => handler.status === response.status);
@@ -31,6 +35,7 @@ const sendRequest = async (method: string, url: string, headers: any, body: any,
     })
     .catch((error) => {
       console.error('Error:', error);
+      return Promise.reject(error);
     });
 }
 
