@@ -1,25 +1,38 @@
 <template >
   <div id="metaInfo">
-    <div id="metaLine" v-for="e in metadataAndIcon" >
-      <p>{{e.icon}}</p>
-      <p>{{e.data}}</p>
+    <div id="metaLine" v-for="line in metadataAndIcon" >
+      <IonAccordionGroup v-if="typeof(line.data) === 'object'">
+        <IonAccordion>
+          <IonItem slot="header">
+            <IonLabel>{{line.name}}</IonLabel>
+          </IonItem>
+          <template v-for="(value, key) in line.data" >
+            <div slot="content">{{key}} {{value}}</div>
+          </template>
+        </IonAccordion>
+      </IonAccordionGroup>
+      <template v-else>
+        <p>{{line.name}}</p>
+        <p>{{line.data}}</p>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { Audio } from '@/interfaces';
+import {IonAccordionGroup, IonAccordion, IonLabel} from '@ionic/vue';
 
 const props = defineProps<{metadata: Audio}>()
 console.log(`metadata: ${props.metadata}`)
 
 const metadataAndIcon = [
-  { icon: "bpm", data: props.metadata.bpm },
-  { icon: "danceability", data: props.metadata.danceability },
-  { icon: "loudness", data: props.metadata.loudness },
-  { icon: "mood", data: props.metadata.mood },
-  { icon: "genre", data: props.metadata.genre },
-  { icon: "instruments", data: props.metadata.instruments }
+  { name: "bpm", data: props.metadata.bpm },
+  { name: "danceability", data: props.metadata.danceability },
+  { name: "loudness", data: props.metadata.loudness },
+  { name: "mood", data: props.metadata.mood },
+  { name: "genre", data: props.metadata.genre },
+  { name: "instruments", data: props.metadata.instruments }
 ]
 
 </script>

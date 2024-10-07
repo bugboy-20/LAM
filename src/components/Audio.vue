@@ -61,10 +61,8 @@ watch(isPlaying, (newValue) => {
   playFunction.value = newValue ? pauseAudio : playAudio
 })
 
-console.log(`icon: ${playIcon.value ? 'pause' : 'play'}`)
 
 const toggleMoreInfo = () => {
-  console.log('toggling more info')
   moreInfoVisible.value = !moreInfoVisible.value
 }
 </script>

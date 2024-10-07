@@ -21,6 +21,14 @@
       <div>
         <Audio v-for="audio in audios" :audio="audio" :key="audio.hash" />
       </div>
+       <ion-accordion-group>
+    <ion-accordion>
+      <ion-item slot="header">
+        <ion-label>First Accordion</ion-label>
+      </ion-item>
+      <div slot="content">First Content</div>
+    </ion-accordion>
+  </ion-accordion-group>
     </ion-content>
   </ion-page>
 </template>
