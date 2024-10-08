@@ -7,7 +7,7 @@ export type Handler = {
   callback: (req: Request, res: Response) => Promise<void>;
 }
 
-const sendRequest = async (method: string, url: string, headers: any, body: any, handlers: Handler[]) => {
+const sendRequest = async (method: string, url: string, headers: any, body: any, handlers: Handler[], fallback?: Handler['callback']) => {
   // GET request has no body
   if (method === 'GET') {
     body = undefined;
@@ -31,6 +31,8 @@ const sendRequest = async (method: string, url: string, headers: any, body: any,
       const handler = handlers.find((handler) => handler.status === response.status);
       if (handler) {
         handler.callback(request, response);
+      } else if (fallback) {
+        fallback(request, response);
       }
     })
     .catch((error) => {
@@ -39,7 +41,7 @@ const sendRequest = async (method: string, url: string, headers: any, body: any,
     });
 }
 
-const sendRequestWithToken = async (method: string, url: string, body: any, handlers: Handler[]) => {
+const sendRequestWithToken = async (method: string, url: string, body: any, handlers: Handler[], fallback?: Handler['callback']) => {
   const token = (await Preferences.get({key: 'token'})).value;
   if (!token) {
     console.error('Token not found'); // This should never happen
@@ -48,7 +50,7 @@ const sendRequestWithToken = async (method: string, url: string, body: any, hand
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`
   };
-  await sendRequest(method, url, headers, body, handlers);
+  await sendRequest(method, url, headers, body, handlers, fallback);
 }
 
 const logUserIn = async (username: string, password: string) => {
@@ -96,5 +98,24 @@ const renewToken = async (username?: string, password?: string) => {
     return token;
  }
 
+function base64ToFile(base64String: string, filename: string, mimeType: string): File {
+  // Remove the base64 prefix if present (e.g., "data:audio/wav;base64,")
+  const byteString = atob(base64String.split(",")[1] || base64String);
+  
+  // Create a buffer to hold the binary data
+  const buffer = new ArrayBuffer(byteString.length);
+  const uintArray = new Uint8Array(buffer);
 
-export { sendRequest, sendRequestWithToken, logUserIn, renewToken };
+  // Assign each byte to the Uint8Array
+  for (let i = 0; i < byteString.length; i++) {
+    uintArray[i] = byteString.charCodeAt(i);
+  }
+
+  // Create a Blob from the Uint8Array
+  const blob = new Blob([uintArray], { type: mimeType });
+
+  // Convert Blob to a File
+  return new File([blob], filename, { type: mimeType });
+}
+
+export { sendRequest, sendRequestWithToken, logUserIn, renewToken, base64ToFile };
