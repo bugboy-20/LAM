@@ -35,6 +35,14 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: path => path.replace(/^\/api/, ''),
       },
+      '/0x0st': {
+        target: 'https://0x0.st',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/0x0st/, ''),
+      }
     },
   },
+  optimizeDeps : {
+    exclude: ['@ffmpeg/ffmpeg']
+  }
 })

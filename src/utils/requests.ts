@@ -1,6 +1,6 @@
 
 import { Preferences } from "@capacitor/preferences";
-import { getUserLogin } from "./storage";
+import { getToken, getUserLogin } from "./storage";
 
 export type Handler = {
   status: number;
@@ -29,6 +29,7 @@ const sendRequest = async (method: string, url: string, headers: any, body: any,
         sendRequestWithToken(method, url, body, handlers);
       }
       const handler = handlers.find((handler) => handler.status === response.status);
+      console.log('handler', handler);
       if (handler) {
         handler.callback(request, response);
       } else if (fallback) {
@@ -42,12 +43,12 @@ const sendRequest = async (method: string, url: string, headers: any, body: any,
 }
 
 const sendRequestWithToken = async (method: string, url: string, body: any, handlers: Handler[], fallback?: Handler['callback']) => {
-  const token = (await Preferences.get({key: 'token'})).value;
+  const token = await getToken();
   if (!token) {
     console.error('Token not found'); // This should never happen
   }
   const headers = {
-    'Content-Type': 'application/json',
+    //'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`
   };
   await sendRequest(method, url, headers, body, handlers, fallback);
@@ -98,24 +99,4 @@ const renewToken = async (username?: string, password?: string) => {
     return token;
  }
 
-function base64ToFile(base64String: string, filename: string, mimeType: string): File {
-  // Remove the base64 prefix if present (e.g., "data:audio/wav;base64,")
-  const byteString = atob(base64String.split(",")[1] || base64String);
-  
-  // Create a buffer to hold the binary data
-  const buffer = new ArrayBuffer(byteString.length);
-  const uintArray = new Uint8Array(buffer);
-
-  // Assign each byte to the Uint8Array
-  for (let i = 0; i < byteString.length; i++) {
-    uintArray[i] = byteString.charCodeAt(i);
-  }
-
-  // Create a Blob from the Uint8Array
-  const blob = new Blob([uintArray], { type: mimeType });
-
-  // Convert Blob to a File
-  return new File([blob], filename, { type: mimeType });
-}
-
-export { sendRequest, sendRequestWithToken, logUserIn, renewToken, base64ToFile };
+export { sendRequest, sendRequestWithToken, logUserIn, renewToken };
