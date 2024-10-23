@@ -52,22 +52,21 @@ async function toMp3() {
   console.log('to mp3')
   const mp3 = await convertToMp3(props.audio.audioBase64, props.audio.mimeType)
   console.log(mp3)
+  downloadAudioFile(mp3)
 }
 
 
 const uploadAudio = async () => { // TODO
   const data = new FormData()
-  const file = base64ToFile(props.audio.audioBase64, `audio.webm`, props.audio.mimeType)
+  const [coords,mp3] = await Promise.all([
+    await props.audio.coordinates,
+    await convertToMp3(props.audio.audioBase64, props.audio.mimeType)
+  ])
 
-  const mp4 = new Blob([webmToMp4(base64ToUint8Array(props.audio.audioBase64))], {type: 'audio/mp4'})
-  data.append('file', mp4)
-  data.append('type', 'audio/mp4')
+
+  data.append('file', mp3)
+  data.append('type', 'audio/mp3')
   console.log('uploading audio')
-
-  const coords = await props.audio.coordinates
-  
-  const mp3 = await convertToMp3(props.audio.audioBase64, props.audio.mimeType)
-
 
   //downloadAudioFile(file)
   sendRequestWithToken('POST', `/api/upload?longitude=${coords.longitude}&latitude=${coords.latitude}`, data, [

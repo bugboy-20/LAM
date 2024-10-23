@@ -1,10 +1,9 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { toBlobURL } from "@ffmpeg/util";
-//import ffmpeg from "cordova-plugin-ffmpeg";
+//import { FFMpeg } from "@awesome-cordova-plugins/ffmpeg";
 
 // Agnostic function to convert any audio file to MP3
-async function convertToMp3(base64audio: string, mimeType: string) {//: Promise<File> {
-
+async function convertToMp3(base64audio: string, mimeType: string) : Promise<File> {
   const baseURL = 'https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/esm'
   const ffmpeg = new FFmpeg();
   console.log("base64audio", base64audio);
@@ -35,13 +34,20 @@ async function convertToMp3(base64audio: string, mimeType: string) {//: Promise<
   // ffmpeg -i input.webm output.mp3
   await ffmpeg.exec(["-i", "input." + mime, "output.mp3"]);
   // Read the output MP3 file
-  const mp3Data = await ffmpeg.readFile('output.mp3');
+  const mp3Data = await ffmpeg.readFile('output.mp3') as Uint8Array;
 
-  return (URL.createObjectURL(new Blob([(mp3Data as Uint8Array).buffer], { type: 'audio/mp3' })))
+  //return (URL.createObjectURL(new Blob([(mp3Data as Uint8Array).buffer], { type: 'audio/mp3' })))
   
+  return unit8ArrayToFile(mp3Data, 'output.mp3', 'audio/mp3');
 
   // return mp3File
  // return unit8ArrayToFile(await mp3Data, 'output.mp3', 'audio/mpeg');
+
+/*
+  const path = URL.createObjectURL(base64ToFile(base64audio, 'input.webm', mimeType));
+  const probe = await FFMpeg.probe(path)
+  return probe
+*/
 }
 
 
