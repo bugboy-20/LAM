@@ -9,6 +9,9 @@
   <IonButton fill="clear" @click="deleteAudio">
     <IonIcon :icon="trashOutline" ></IonIcon>
   </IonButton>
+  <IonButton fill="clear" @click="toMp3">
+    3
+  </IonButton>
 </template>
 
 <script setup lang="ts">
@@ -44,6 +47,14 @@ function downloadAudioFile(file : File) {
   // Revoke the object URL after the download
   URL.revokeObjectURL(url);
 }
+
+async function toMp3() {
+  console.log('to mp3')
+  const mp3 = await convertToMp3(props.audio.audioBase64, props.audio.mimeType)
+  console.log(mp3)
+}
+
+
 const uploadAudio = async () => { // TODO
   const data = new FormData()
   const file = base64ToFile(props.audio.audioBase64, `audio.webm`, props.audio.mimeType)

@@ -1,14 +1,26 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
+import { toBlobURL } from "@ffmpeg/util";
+//import ffmpeg from "cordova-plugin-ffmpeg";
 
 // Agnostic function to convert any audio file to MP3
 async function convertToMp3(base64audio: string, mimeType: string) {//: Promise<File> {
 
+  const baseURL = 'https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/esm'
   const ffmpeg = new FFmpeg();
+  console.log("base64audio", base64audio);
   const file = base64ToUint8Array(base64audio);
   const mime = mimeType.split('/')[1];
+  console.log("mime", mime);
   
   //if(!ffmpeg.loaded) // maybe FFmpeg it's a singleton, TODO: check this
-  await ffmpeg.load().then(() => { console.log('FFmpeg loaded!') });
+  console.log("loading FFmpeg...");
+  await ffmpeg.load({
+            coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+            wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+            workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript')
+  })
+  .then(() => { console.log('FFmpeg loaded!') })
+  .catch((err) => { console.error('errore di caricamento' + err) });
 
 
   ffmpeg.on("progress", ({ progress, time }) => {
@@ -16,16 +28,17 @@ async function convertToMp3(base64audio: string, mimeType: string) {//: Promise<
     console.log(`Processing time: ${time} seconds`);
   })
   
+  console.log("loading file...");
 
   // Write the audio file to FFmpeg's virtual filesystem
-  ffmpeg.writeFile('input.' + mime, file).then(() => { console.log('File written!') });
+  await ffmpeg.writeFile('input.' + mime, file).then(() => { console.log('File written!') });
   // ffmpeg -i input.webm output.mp3
   await ffmpeg.exec(["-i", "input." + mime, "output.mp3"]);
   // Read the output MP3 file
-  const mp3Data = ffmpeg.readFile('output.mp3');
+  const mp3Data = await ffmpeg.readFile('output.mp3');
 
+  return (URL.createObjectURL(new Blob([(mp3Data as Uint8Array).buffer], { type: 'audio/mp3' })))
   
-  console.log('mp3Data', mp3Data);
 
   // return mp3File
  // return unit8ArrayToFile(await mp3Data, 'output.mp3', 'audio/mpeg');

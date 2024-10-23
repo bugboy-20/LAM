@@ -41,8 +41,12 @@ export default defineConfig({
         rewrite: path => path.replace(/^\/0x0st/, ''),
       }
     },
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp'
+    }
   },
   optimizeDeps : {
-    exclude: ['@ffmpeg/ffmpeg']
+    exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util']
   }
 })
