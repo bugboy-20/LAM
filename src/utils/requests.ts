@@ -1,6 +1,7 @@
 
 import { Preferences } from "@capacitor/preferences";
 import { getToken, getUserLogin } from "./storage";
+import {Audio, AudioSummary} from "@/interfaces";
 
 export type Handler = {
   status: number;
@@ -29,12 +30,13 @@ const sendRequest = async (method: string, url: string, headers: any, body: any,
         sendRequestWithToken(method, url, body, handlers);
       }
       const handler = handlers.find((handler) => handler.status === response.status);
-      console.log('handler', handler);
-      if (handler) {
+
+      if (handler)
         handler.callback(request, response);
-      } else if (fallback) {
+      else if (fallback)
         fallback(request, response);
-      }
+      else
+        return Promise.reject(new Error('No handler found for status ' + response.status + ', response: ' + response.text()));
     })
     .catch((error) => {
       console.error('Error:', error);
@@ -68,7 +70,6 @@ const renewToken = async (username?: string, password?: string) => {
     password = user.password ?? '';
   }
 
-
   const token = await fetch(`/api/auth/token`, {
     mode: 'cors',
     method: 'POST',
@@ -97,6 +98,38 @@ const renewToken = async (username?: string, password?: string) => {
       //return router.push(`/tabs/?token=${token}`); // TODO: secure this
     }) ?? ''; // This is a workaround to make TypeScript happy
     return token;
- }
+}
 
-export { sendRequest, sendRequestWithToken, logUserIn, renewToken };
+const getAudioSummary = async () : Promise<AudioSummary[]> => {
+  let audioSummaries : AudioSummary[] = [];
+  const { promise, resolve, reject:_ } = Promise.withResolvers<AudioSummary[]>();
+  sendRequestWithToken('GET', '/api/audio/my', undefined, [
+    {
+      status: 200,
+      callback: async (_, res) => {
+        resolve(await res.json());
+        console.log('audioSummaries', audioSummaries);
+      }
+    }
+  ])
+  return await promise;
+}
+
+// get the last uploaded audio id by confronting the user's audios before and after the upload
+const getUploadedAudioId = async (uploadSucessful : Promise<boolean>) : Promise<number> => {
+  const audioSummariesBefore = await getAudioSummary();
+
+  if (!(await uploadSucessful))
+    return Promise.reject(new Error('Upload failed'));
+
+  const audioSummariesAfter = await getAudioSummary();
+
+  const addeAudio = audioSummariesAfter.find(e => !audioSummariesBefore.includes(e))
+  console.log(`before: ${audioSummariesBefore.length}, after: ${audioSummariesAfter.length}, added: ${addeAudio}`);
+  if (!addeAudio) // this should never happen
+    return Promise.reject(new Error('No audio found'));
+  return addeAudio.id;
+}
+
+
+export { sendRequest, sendRequestWithToken, logUserIn, renewToken, getUploadedAudioId, getAudioSummary };

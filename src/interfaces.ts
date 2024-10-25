@@ -28,4 +28,9 @@ type Nullable<T> = {
   [P in keyof T]: T[P] | null;
 };
 
-
+export interface AudioSummary {
+  id: number;
+  longitude: number;
+  latitude: number;
+  hidden: boolean;
+}
