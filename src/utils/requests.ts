@@ -36,7 +36,7 @@ const sendRequest = async (method: string, url: string, headers: any, body: any,
       else if (fallback)
         fallback(request, response);
       else
-        return Promise.reject(new Error('No handler found for status ' + response.status + ', response: ' + response.text()));
+        return Promise.reject(new Error('No handler found for status ' + response.status + ', response: ' + await response.text()));
     })
     .catch((error) => {
       console.error('Error:', error);
@@ -101,34 +101,33 @@ const renewToken = async (username?: string, password?: string) => {
 }
 
 const getAudioSummary = async () : Promise<AudioSummary[]> => {
-  let audioSummaries : AudioSummary[] = [];
   const { promise, resolve, reject:_ } = Promise.withResolvers<AudioSummary[]>();
   sendRequestWithToken('GET', '/api/audio/my', undefined, [
     {
       status: 200,
       callback: async (_, res) => {
         resolve(await res.json());
-        console.log('audioSummaries', audioSummaries);
       }
     }
   ])
+  console.log('audioSummaries', await promise);
   return await promise;
 }
 
 // get the last uploaded audio id by confronting the user's audios before and after the upload
 const getUploadedAudioId = async (uploadSucessful : Promise<boolean>) : Promise<number> => {
-  const audioSummariesBefore = await getAudioSummary();
+  const audioSummariesBefore = await getAudioSummary().then(a => a.map(e => e.id));
 
   if (!(await uploadSucessful))
     return Promise.reject(new Error('Upload failed'));
 
-  const audioSummariesAfter = await getAudioSummary();
+  const audioSummariesAfter = await getAudioSummary().then(a => a.map(e => e.id));
 
   const addeAudio = audioSummariesAfter.find(e => !audioSummariesBefore.includes(e))
-  console.log(`before: ${audioSummariesBefore.length}, after: ${audioSummariesAfter.length}, added: ${addeAudio}`);
+  console.log(`before: ${audioSummariesBefore}, after: ${audioSummariesAfter}, added: ${JSON.stringify(addeAudio)}`);
   if (!addeAudio) // this should never happen
     return Promise.reject(new Error('No audio found'));
-  return addeAudio.id;
+  return addeAudio
 }
 
 

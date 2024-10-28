@@ -17,9 +17,9 @@
 <script setup lang="ts">
 import { IonButton, IonIcon, } from '@ionic/vue';
 import {cloudUploadOutline, trashOutline} from 'ionicons/icons';
-import { AudioInternal } from '@/interfaces';
-import { deleteAudio as deleteAudioDB } from '@/utils/storage';
-import { sendRequestWithToken} from '@/utils/requests';
+import { Audio, AudioInternal } from '@/interfaces';
+import { deleteAudio as deleteAudioDB, saveAudio } from '@/utils/storage';
+import { getUploadedAudioId, sendRequestWithToken} from '@/utils/requests';
 import { base64ToFile, base64ToUint8Array, convertToMp3 } from '@/utils/audio_processing';
 import webmToMp4 from 'webm-to-mp4';
 
@@ -57,7 +57,10 @@ async function toMp3() {
 
 
 const uploadAudio = async () => { // TODO
+  const { promise: uploadSucess, resolve: uploadResolve, reject: uploadReject } = Promise.withResolvers<boolean>()
+
   const data = new FormData()
+  const id = getUploadedAudioId(uploadSucess)
   const [coords,mp3] = await Promise.all([
     await props.audio.coordinates,
     await convertToMp3(props.audio.audioBase64, props.audio.mimeType)
@@ -72,14 +75,24 @@ const uploadAudio = async () => { // TODO
   sendRequestWithToken('POST', `/api/upload?longitude=${coords.longitude}&latitude=${coords.latitude}`, data, [
   //sendRequest('POST', '/0x0st/', {'Allow-Origin':'*'}, data, [
     {status: 200, callback: async (req,res) => {
-      res.json().then((data) => {
+      res.json().then(async (data) => {
+        const metadata = data as Audio
         console.log(data)
+        uploadResolve(true)
+        const audioUdated = {
+          ...props.audio,
+          id: await id,
+          metadata
+        }
+        console.log(JSON.stringify(audioUdated))
+        await saveAudio(audioUdated)
       })
     }}
   ], async (_, res) => {
-
     console.log(`error: ${await res.text()}`)
+    uploadReject(false)
   })
+
 }
 
 const deleteAudio = () => {
