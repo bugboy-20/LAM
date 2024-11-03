@@ -17,18 +17,20 @@
       <IonButton @click="saveDatabase">Save Database</IonButton>
       <IonButton @click="readDatabase">Read Database</IonButton>
       <IonButton @click="removeDatabase">Remove Database</IonButton>
+      <IonButton @click="deleteUploadedAudio">Delete Uploaded Audio</IonButton>
       <Audio :audio="demoAudio" />
       <div>
         <Audio v-for="audio in audios" :audio="audio" :key="audio.hash" />
       </div>
        <ion-accordion-group>
-    <ion-accordion>
-      <ion-item slot="header">
-        <ion-label>First Accordion</ion-label>
-      </ion-item>
-      <div slot="content">First Content</div>
-    </ion-accordion>
-  </ion-accordion-group>
+        <ion-accordion>
+          <ion-item slot="header">
+            <ion-label>First Accordion</ion-label>
+          </ion-item>
+          <div slot="content">First Content</div>
+        </ion-accordion>
+       </ion-accordion-group>
+       {{ ids }}
     </ion-content>
   </ion-page>
 </template>
@@ -37,14 +39,23 @@
 import { ref } from 'vue';
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonSelect, IonSelectOption } from '@ionic/vue';
 import {deleteAudio, readAllAudioMetadata, saveAudio} from '@/utils/storage';
+import {getAudioSummary, sendRequestWithToken} from '@/utils/requests';
 import {AudioInternal} from '@/interfaces';
+import {AudioSummary} from '@/interfaces';
 
 import Audio from '@/components/Audio.vue';
+import {onMounted} from 'vue';
 
 const selected = ref<string>('1');
 const fileText = ref<string>('');
 
 const audios = ref<AudioInternal[]>([]);
+const ids = ref<string>("");
+
+onMounted(async () => {
+  ids.value = await getAudioSummary().then((result) => JSON.stringify(result));
+});
+
 
 const demoAudio : AudioInternal = {
   id: 345789,
@@ -127,6 +138,17 @@ const removeDatabase = async () => {
   }
 };
 
+const deleteUploadedAudio = async () => {
+  const audios = await getAudioSummary().then((result) => result.map(async (audio: AudioSummary) => {
+    const id = audio.id;
+    return sendRequestWithToken('DELETE', `/api/audio/${id}`, null, [
+      {status: 200, callback: async (req, res) => {
+        console.log(`audio ${id} eliminato`);
+      }}
+    ]);
+  }))
+  await Promise.all(audios);
+};
 
 
 </script>

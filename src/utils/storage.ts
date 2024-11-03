@@ -83,7 +83,7 @@ async function initializeDatabase() {
         loudness REAL NOT NULL,
         mood TEXT NOT NULL,
         genre TEXT NOT NULL,
-        instruments TEXT NOT NULL,
+        instrument TEXT NOT NULL,
         FOREIGN KEY (id) REFERENCES audio(id) ON DELETE CASCADE
       )
     `;
@@ -125,7 +125,7 @@ async function readAllAudioMetadata() {
           loudness: audio.loudness as number,
           mood: JSON.parse(audio.mood),
           genre: JSON.parse(audio.genre),
-          instruments: JSON.parse(audio.instruments),
+          instrument: JSON.parse(audio.instrument),
         } : undefined
       }
     });
@@ -187,7 +187,9 @@ async function saveAudio(audioData: AudioInternal) {
 
 }
 
-async function saveAudioMetadata(audio: AudioInternal) {
+async function saveAudioMetadata(audio: AudioInternal) : Promise<void> {
+  console.log("Salvataggio metadati audio:")
+  console.log(JSON.stringify(audio.metadata));
   try {
     const db = CapacitorSQLite;
     // update audio with metadata
@@ -202,13 +204,13 @@ async function saveAudioMetadata(audio: AudioInternal) {
 
   
     const query = `
-      INSERT INTO audio_metadata (id, bpm, danceability, loudness, mood, genre, instruments)
+      INSERT INTO audio_metadata (id, bpm, danceability, loudness, mood, genre, instrument)
       VALUES (?, ?, ?, ?, ?, ?, ?);
     `;
     const audioData = audio.metadata;
     if(!audioData)
       return;
-    const values = [audio.id, audioData.bpm, JSON.stringify(audioData.danceability), audioData.loudness, JSON.stringify(audioData.mood), JSON.stringify(audioData.genre), JSON.stringify(audioData.instruments)];
+    const values = [audio.id, audioData.bpm, JSON.stringify(audioData.danceability), audioData.loudness, JSON.stringify(audioData.mood), JSON.stringify(audioData.genre), JSON.stringify(audioData.instrument)];
     await db.run({database: "audio_db", statement: query, values});
 
 

@@ -49,9 +49,7 @@ function downloadAudioFile(file : File) {
 }
 
 async function toMp3() {
-  console.log('to mp3')
   const mp3 = await convertToMp3(props.audio.audioBase64, props.audio.mimeType)
-  console.log(mp3)
   downloadAudioFile(mp3)
 }
 
@@ -77,7 +75,6 @@ const uploadAudio = async () => { // TODO
     {status: 200, callback: async (req,res) => {
       res.json().then(async (data) => {
         const metadata = data as Audio
-        console.log(data)
         uploadResolve(true)
         const audioUdated = {
           ...props.audio,
@@ -89,7 +86,7 @@ const uploadAudio = async () => { // TODO
       })
     }}
   ], async (_, res) => {
-    console.log(`error: ${await res.text()}`)
+    console.error(`error: ${await res.text()}`)
     uploadReject(false)
   })
 

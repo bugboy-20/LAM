@@ -77,18 +77,13 @@ const renewToken = async (username?: string, password?: string) => {
       username: username,
       password: password,
     })}).then((response) => {
-      console.log('after fetch');
       if(response.status == 400) {
         return Promise.reject(new Error('Invalid username or password'));
       }
-      console.log('status 200');
       if(response.status == 200) {
-        console.log(response);
         return response.json();
       }
-      console.log(response);
     }).then((json) => {
-      console.log(json);
       const token = json.client_secret;
       if (!token) {
         return Promise.reject(new Error('No token found in response.'));
@@ -110,7 +105,6 @@ const getAudioSummary = async () : Promise<AudioSummary[]> => {
       }
     }
   ])
-  console.log('audioSummaries', await promise);
   return await promise;
 }
 
@@ -124,7 +118,6 @@ const getUploadedAudioId = async (uploadSucessful : Promise<boolean>) : Promise<
   const audioSummariesAfter = await getAudioSummary().then(a => a.map(e => e.id));
 
   const addeAudio = audioSummariesAfter.find(e => !audioSummariesBefore.includes(e))
-  console.log(`before: ${audioSummariesBefore}, after: ${audioSummariesAfter}, added: ${JSON.stringify(addeAudio)}`);
   if (!addeAudio) // this should never happen
     return Promise.reject(new Error('No audio found'));
   return addeAudio

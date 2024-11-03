@@ -4,7 +4,7 @@ export interface Audio {
   loudness: number;
   mood: object;
   genre: object;
-  instruments: object;
+  instrument: object;
 }
 
 export interface AudioInternal {
