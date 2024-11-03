@@ -37,7 +37,6 @@ enum DbAudio { Found,
 
 async function initializeDatabase() {
   try {
-    // applyPolyfills().then(() => {jeepSqlite(window);});
     const platform = Capacitor.getPlatform();
     const sqlite: SQLiteConnection = new SQLiteConnection(CapacitorSQLite)
     if(platform === "web") {
@@ -59,7 +58,6 @@ async function initializeDatabase() {
     });
     await CapacitorSQLite.open({database: "audio_db", readonly: false});
 
-    //console.log("Database aperto con successo!");
     // Creare una tabella per i metadati audio
     const createAudioTable = `
       CREATE TABLE IF NOT EXISTS audio (
@@ -90,11 +88,9 @@ async function initializeDatabase() {
 
     const tables = [createAudioTable, createAudioMetadataTable];
     for (const table of tables) {
-      const result = await db.execute({database: "audio_db", statements: table});
-      //console.log(`Tabella creata con successo: ${result.changes}`);
+      await db.execute({database: "audio_db", statements: table});
     }
 
-    //console.log("Database e tabella creati con successo!");
 
   } catch (error) {
     console.error("Errore nell'inizializzazione del database:", error);
@@ -188,8 +184,6 @@ async function saveAudio(audioData: AudioInternal) {
 }
 
 async function saveAudioMetadata(audio: AudioInternal) : Promise<void> {
-  console.log("Salvataggio metadati audio:")
-  console.log(JSON.stringify(audio.metadata));
   try {
     const db = CapacitorSQLite;
     // update audio with metadata
