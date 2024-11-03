@@ -15,7 +15,7 @@
 import { IonButton, IonIcon, } from '@ionic/vue';
 import {cloudUploadOutline, trashOutline} from 'ionicons/icons';
 import { Audio, AudioInternal } from '@/interfaces';
-import { deleteAudio as deleteAudioDB, saveAudio } from '@/utils/storage';
+import { saveAudio } from '@/utils/storage';
 import { getUploadedAudioId, sendRequestWithToken} from '@/utils/requests';
 import { convertToMp3 } from '@/utils/audio_processing';
 
