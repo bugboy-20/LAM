@@ -9,9 +9,6 @@
   <IonButton fill="clear" @click="deleteAudio">
     <IonIcon :icon="trashOutline" ></IonIcon>
   </IonButton>
-  <IonButton fill="clear" @click="toMp3">
-    3
-  </IonButton>
 </template>
 
 <script setup lang="ts">
@@ -20,39 +17,10 @@ import {cloudUploadOutline, trashOutline} from 'ionicons/icons';
 import { Audio, AudioInternal } from '@/interfaces';
 import { deleteAudio as deleteAudioDB, saveAudio } from '@/utils/storage';
 import { getUploadedAudioId, sendRequestWithToken} from '@/utils/requests';
-import { base64ToFile, base64ToUint8Array, convertToMp3 } from '@/utils/audio_processing';
-import webmToMp4 from 'webm-to-mp4';
+import { convertToMp3 } from '@/utils/audio_processing';
 
 const props = defineProps<{audio: AudioInternal}>()
 const emit = defineEmits<{(e: 'hide', id: string): void}>()
-
-function downloadAudioFile(file : File) {
-  // Create a URL for the File object
-  const url = URL.createObjectURL(file);
-  
-  // Create an anchor element and set the download attribute
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = file.name || 'audio.mp3';  // You can set a default file name if none exists
-
-  // Append the anchor to the body
-  document.body.appendChild(a);
-  
-  // Programmatically click the anchor to trigger the download
-  a.click();
-  
-  // Remove the anchor from the document
-  document.body.removeChild(a);
-  
-  // Revoke the object URL after the download
-  URL.revokeObjectURL(url);
-}
-
-async function toMp3() {
-  const mp3 = await convertToMp3(props.audio.audioBase64, props.audio.mimeType)
-  downloadAudioFile(mp3)
-}
-
 
 const uploadAudio = async () => { // TODO
   const { promise: uploadSucess, resolve: uploadResolve, reject: uploadReject } = Promise.withResolvers<boolean>()
@@ -72,7 +40,7 @@ const uploadAudio = async () => { // TODO
   //downloadAudioFile(file)
   sendRequestWithToken('POST', `/api/upload?longitude=${coords.longitude}&latitude=${coords.latitude}`, data, [
   //sendRequest('POST', '/0x0st/', {'Allow-Origin':'*'}, data, [
-    {status: 200, callback: async (req,res) => {
+    {status: 200, callback: async (_,res) => {
       res.json().then(async (data) => {
         const metadata = data as Audio
         uploadResolve(true)
