@@ -41,8 +41,12 @@ watch(() => props.audio, () => {
 
 const deleteAudio = () => { // TODO better to use a dialog
   emit('delete', props.audio.hash)
-  sendRequestWithToken('DELETE', `/audio/my/${props.audio.id}`, {}, [ //TODO
-  ])
+  sendRequestWithToken('DELETE', `/api/audio/${props.audio.id}`, null, [
+    {status: 200, callback: async () => {
+      console.log(`audio ${props.audio.id} eliminato`);
+    }}
+  ]);
+
 }
 
 const hideAudio = () => {
