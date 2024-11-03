@@ -20,7 +20,7 @@ import { getUploadedAudioId, sendRequestWithToken} from '@/utils/requests';
 import { convertToMp3 } from '@/utils/audio_processing';
 
 const props = defineProps<{audio: AudioInternal}>()
-const emit = defineEmits<{(e: 'hide', id: string): void}>()
+const emit = defineEmits<{(e: 'delete', id: string): void}>()
 
 const uploadAudio = async () => { // TODO
   const { promise: uploadSucess, resolve: uploadResolve, reject: uploadReject } = Promise.withResolvers<boolean>()
@@ -61,7 +61,6 @@ const uploadAudio = async () => { // TODO
 }
 
 const deleteAudio = () => {
-  emit('hide', props.audio.hash)
-  deleteAudioDB(props.audio.hash)
+  emit('delete', props.audio.hash)
 }
 </script>

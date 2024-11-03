@@ -21,7 +21,7 @@ import {sendRequestWithToken} from '@/utils/requests';
 import { trashOutline, eyeOutline, eyeOffOutline } from 'ionicons/icons'
 const emit = defineEmits<{
   showMoreInfo: [audio: Audio]
-  hide: [id: string]
+  delete: [id: string]
 }>()
 
 const props = defineProps<{audio: AudioInternal}>()
@@ -39,9 +39,8 @@ watch(() => props.audio, () => {
   visible.value = true
 })
 
-const deleteAudio = () => {
-  emit('hide', props.audio.hash)
-  deleteAudioDB(props.audio.hash)
+const deleteAudio = () => { // TODO better to use a dialog
+  emit('delete', props.audio.hash)
   sendRequestWithToken('DELETE', `/audio/my/${props.audio.id}`, {}, [ //TODO
   ])
 }

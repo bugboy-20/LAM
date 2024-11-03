@@ -5,8 +5,8 @@
         <IonIcon :icon="playIcon" ></IonIcon>
       </IonButton>
       <AudioTimestamp :duration="props.audio.duration" ref="timestamp"/>
-      <AudioPreview :audio="audio" v-if="!props.audio.metadata" @hide="(_) => {visible = false}"/>
-      <AudioUploaded :audio="audio" v-else @hide="() => {visible = false}" @showMoreInfo="toggleMoreInfo" />
+      <AudioPreview :audio="audio" v-if="!props.audio.metadata" @delete="deleted"/>
+      <AudioUploaded :audio="audio" v-else @delete="deleted" @showMoreInfo="toggleMoreInfo" />
     </div>
     <MetadataInfo :metadata="metadata" v-if="moreInfoVisible && metadata"/>
   </div>
@@ -22,6 +22,7 @@ import AudioTimestamp from '@/components/AudioTimestamp.vue';
 import MetadataInfo from '@/components/MetadataInfo.vue';
 import { IonButton, IonIcon } from '@ionic/vue';
 import {playCircleOutline, pauseCircleOutline} from 'ionicons/icons';
+import {deleteAudio} from '@/utils/storage';
 
 const props = defineProps<{audio: AudioInternal}>()
 
@@ -64,6 +65,11 @@ watch(isPlaying, (newValue) => {
 
 const toggleMoreInfo = () => {
   moreInfoVisible.value = !moreInfoVisible.value
+}
+const deleted = () => {
+  deleteAudio(props.audio.hash)
+    .catch((e) => {console.error(e); visible.value = true})
+  visible.value = false
 }
 </script>
 
