@@ -50,7 +50,13 @@ const deleteAudio = () => { // TODO better to use a dialog
 
 const hideAudio = () => {
   hideStatus.value = !hideStatus.value
-  sendRequestWithToken('GET', `/audio/my/${props.audio.id}/hide`, {}, [ //TODO
+  let op = hideStatus.value ? 'hide' : 'show'
+  sendRequestWithToken('GET', `/api/audio/my/${props.audio.id}/${op}`, {}, [
+    {status: 200, callback: async (req,res) => {
+      res.text().then((data) => {
+        console.log(`audio ${props.audio.id} ${op}ped, response: ${data}`);
+      })
+    }}
   ])
 
 }
