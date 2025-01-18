@@ -5,7 +5,7 @@
         <IonIcon :icon="playIcon" ></IonIcon>
       </IonButton>
       <AudioTimestamp :duration="props.audio.duration" ref="timestamp"/>
-      <AudioPreview :audio="audio" v-if="!props.audio.metadata" @delete="deleted"/>
+      <AudioPreview :audio="audio" v-if="!props.audio.metadata" @delete="deleted" @upload="(uploadedAudio) => {props.audio.metadata = uploadedAudio.metadata}"/>
       <AudioUploaded :audio="audio" v-else @delete="deleted" @showMoreInfo="toggleMoreInfo" />
     </div>
     <MetadataInfo :metadata="metadata" v-if="moreInfoVisible && metadata"/>

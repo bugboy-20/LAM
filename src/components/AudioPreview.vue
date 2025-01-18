@@ -23,7 +23,7 @@ import { ref } from 'vue';
 import Message from './Message.vue';
 
 const props = defineProps<{audio: AudioInternal}>()
-const emit = defineEmits<{(e: 'delete', id: string): void}>()
+const emit = defineEmits<{(e: 'delete', id: string): void,(e: 'upload', id: AudioInternal): void}>()
 
 const uploadedSuccess = ref(false)
 const uploadShowMessage = ref<typeof Message | null>(null)
@@ -58,6 +58,7 @@ const uploadAudio = async () => { // TODO
         console.log(JSON.stringify(audioUdated))
         await saveAudio(audioUdated)
         uploadedSuccess.value = true
+        emit('upload', audioUdated)
       })
     }}
   ], async (_, res) => {
