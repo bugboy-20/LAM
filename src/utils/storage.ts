@@ -116,6 +116,7 @@ async function readAllAudioMetadata() {
         audioBase64: audio.audio_base64 as string,
         mimeType: audio.mime_type as string,
         metadata: audio.id ?{
+          hidden: false,
           bpm: audio.bpm as number,
           danceability: JSON.parse(audio.danceability) as number,
           loudness: audio.loudness as number,

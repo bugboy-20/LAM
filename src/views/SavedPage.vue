@@ -52,16 +52,25 @@ const ids = ref<string>("");
 
 onMounted(async () => {
   ids.value = await getAudioSummary().then((result) => JSON.stringify(result));
+  readDatabase();
 });
 
 
 const readDatabase = async () => {
-  readAllAudioMetadata().then((result) => {
-    audios.value = result;
-    fileText.value = JSON.stringify(audios.value);
-    console.log(audios.value);
+  Promise.all([readAllAudioMetadata(), getAudioSummary()]).then(([DBaudio, ServerAudio]) => {
+    DBaudio.forEach((audio) => {
+      if (audio.id === undefined) {
+        return;
+      }
+      const found = ServerAudio.find((a) => a.id === audio.id);
+      if (found) {
+        if( audio.metadata)
+          audio.metadata.hidden = found.hidden;
+        audios.value.push(audio);
+      }
+    });
   });
-}
+ }
 
 const removeDatabase = async () => {
   try {

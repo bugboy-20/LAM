@@ -1,4 +1,5 @@
 export interface Audio {
+  hidden: boolean;
   bpm: number;
   danceability: number;
   loudness: number;

@@ -16,7 +16,6 @@
 import { ref, watch } from 'vue';
 import { Audio, AudioInternal } from '@/interfaces';
 import { IonButton, IonIcon } from '@ionic/vue';
-import { deleteAudio as deleteAudioDB } from '@/utils/storage';
 import {sendRequestWithToken} from '@/utils/requests';
 import { trashOutline, eyeOutline, eyeOffOutline } from 'ionicons/icons'
 const emit = defineEmits<{
@@ -26,7 +25,7 @@ const emit = defineEmits<{
 
 const props = defineProps<{audio: AudioInternal}>()
 const visible = ref(true)
-const hideStatus = ref(false)
+const hideStatus = ref(props.audio.metadata?.hidden || false)
 
 const toggleMoreInfo = () => {
   const metadata = props.audio.metadata
