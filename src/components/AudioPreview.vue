@@ -6,9 +6,10 @@
   <IonButton fill="clear" @click="uploadAudio">
     <IonIcon :icon="cloudUploadOutline" ></IonIcon>
   </IonButton>
-  <IonButton fill="clear" @click="deleteAudio">
+  <IonButton fill="clear" @click="deleteAudio" :disabled="!uploadedSuccess" >
     <IonIcon :icon="trashOutline" ></IonIcon>
   </IonButton>
+  <Message ref="uploadShowMessage" :message="uploadedSuccess ? 'Audio uploaded' : 'Uploading audio'"/>
 </template>
 
 <script setup lang="ts">
@@ -18,9 +19,14 @@ import { Audio, AudioInternal } from '@/interfaces';
 import { saveAudio } from '@/utils/storage';
 import { getUploadedAudioId, sendRequestWithToken} from '@/utils/requests';
 import { convertToMp3 } from '@/utils/audio_processing';
+import { ref } from 'vue';
+import Message from './Message.vue';
 
 const props = defineProps<{audio: AudioInternal}>()
 const emit = defineEmits<{(e: 'delete', id: string): void}>()
+
+const uploadedSuccess = ref(false)
+const uploadShowMessage = ref<typeof Message | null>(null)
 
 const uploadAudio = async () => { // TODO
   const { promise: uploadSucess, resolve: uploadResolve, reject: uploadReject } = Promise.withResolvers<boolean>()
@@ -51,6 +57,7 @@ const uploadAudio = async () => { // TODO
         }
         console.log(JSON.stringify(audioUdated))
         await saveAudio(audioUdated)
+        uploadedSuccess.value = true
       })
     }}
   ], async (_, res) => {
