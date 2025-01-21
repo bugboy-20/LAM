@@ -38,15 +38,32 @@ watch(() => props.audio, () => {
   visible.value = true
 })
 
-const deleteAudio = () => { // TODO better to use a dialog
+/*
+Status code 401 (User is not authorized )
+Response { "detail": "Not authenticated" }
+Status code 401 (Audio not found )
+Response { "detail": "Audio not found" }
+Status code 401 (User is not authorized to delete the audio)
+Response { "detail": "Can’t delete audio from other
+users." }
+Status code 200 (Song successfully deleted )
+Response { "detail": "Song deleted" }
+*/
+const deleteAudio = () => {
   emit('delete', props.audio.hash)
   sendRequestWithToken('DELETE', `/api/audio/${props.audio.id}`, null, [
     {status: 200, callback: async () => {
       console.log(`audio ${props.audio.id} eliminato`);
     }}
-  ]);
+  ],async (_,res) => {
+    res.text().then((data) => {
+      console.log(`audio ${props.audio.id} non eliminato, response: ${data}`);
+    })
+  });
 
 }
+
+
 
 const hideAudio = () => {
   hideStatus.value = !hideStatus.value
@@ -56,7 +73,7 @@ const hideAudio = () => {
       res.text().then((data) => {
         console.log(`audio ${props.audio.id} ${op}ped, response: ${data}`);
       })
-    }}
+    }},
   ])
 
 }

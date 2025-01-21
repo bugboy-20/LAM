@@ -87,7 +87,7 @@ const removeDatabase = async () => {
 const deleteUploadedAudio = async () => {
   const audios = await getAudioSummary().then((result) => result.map(async (audio: AudioSummary) => {
     const id = audio.id;
-    return sendRequestWithToken('DELETE', `/api/audio/${id}`, null, [
+    return sendRequestWithToken('DELETE', `/api/audio/my/${id}`, null, [
       {status: 200, callback: async (req, res) => {
         console.log(`audio ${id} eliminato`);
       }}
