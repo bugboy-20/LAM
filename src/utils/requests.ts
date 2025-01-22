@@ -23,11 +23,11 @@ const sendRequest = async (method: string, url: string, headers: any, body: any,
     .then(async (response) => {
       if (response.status === 401) {
         const errMsg = (await response.json()).detail;
-        if (errMsg != "Not authenticated" )
+        if (errMsg != "Not authenticated" && errMsg != "Token expired")
           return Promise.reject(new Error(errMsg));
 
         await renewToken();
-        sendRequestWithToken(method, url, body, handlers);
+        return sendRequestWithToken(method, url, body, handlers);
       }
       const handler = handlers.find((handler) => handler.status === response.status);
 

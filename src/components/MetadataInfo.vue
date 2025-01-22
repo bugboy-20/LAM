@@ -7,7 +7,7 @@
             <IonLabel>{{line.name}}</IonLabel>
           </IonItem>
           <template v-for="(value, key) in line.data" >
-            <div slot="content">{{key}} {{value}}</div>
+            <div slot="content">{{key}} {{value}}%</div>
           </template>
         </IonAccordion>
       </IonAccordionGroup>
@@ -32,8 +32,24 @@ const metadataAndIcon = [
   { name: "loudness", data: props.metadata.loudness },
   { name: "mood", data: props.metadata.mood },
   { name: "genre", data: props.metadata.genre },
-  { name: "instruments", data: props.metadata.instruments }
-]
+  { name: "instruments", data: props.metadata.instrument }
+].map((item) => {
+  if ( typeof item.data === 'number') {
+    item.data = Math.round(item.data * 100) / 100; // 2 decimals
+  } else if ( typeof item.data === 'object') {
+    // Handle the object case
+    const entries = Object.entries(item.data) as [string, number][];
+    const top5Entries = entries
+        .filter(([_, value]) => typeof value === 'number') // Ensure values are numbers
+        .sort((a, b) => b[1] - a[1]) // Sort descending by value
+        .slice(0, 5) // Take the top 5 entries
+        .map(([key, value]) => [key, Math.round(value * 100)]); // Round the values to 2 decimals
+    console.log(item.data)
+    console.log(Object.fromEntries(top5Entries))
+    item.data = Object.fromEntries(top5Entries);
+  }
+  return item;
+})
 
 </script>
 
