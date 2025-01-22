@@ -3,23 +3,27 @@
     <source src="/home/diego/Musica/01 - Astronomy Domine.mp3" type="audio/mpeg">
     Your browser does not support the audio element.
   </audio-->
-  <IonButton fill="clear" @click="uploadAudio">
-    <IonIcon :icon="cloudUploadOutline" ></IonIcon>
-  </IonButton>
+  <IonButton fill="clear" @click="uploadAudio" v-if="connectionType != 'none'">
+  <IonIcon :icon="cloudUploadOutline" ></IonIcon></IonButton >
+  <IonButton fill="clear" id="no-wifi-alert" v-else><IonIcon :icon="cloudUploadOutline" ></IonIcon></IonButton>
   <IonButton fill="clear" @click="deleteAudio" :disabled="!uploadedSuccess" >
     <IonIcon :icon="trashOutline" ></IonIcon>
   </IonButton>
   <Message ref="uploadShowMessage" :message="uploadedSuccess ? 'Audio uploaded' : 'Uploading audio'"/>
+  <IonAlert trigger="no-wifi-alert" header="Sono sei connesso ad un wifi" :buttons="alertButtons" >
+  </IonAlert>
+
 </template>
 
 <script setup lang="ts">
-import { IonButton, IonIcon, } from '@ionic/vue';
+import { IonAlert, IonButton, IonIcon, } from '@ionic/vue';
 import {cloudUploadOutline, trashOutline} from 'ionicons/icons';
 import { Audio, AudioInternal } from '@/interfaces';
 import { saveAudio } from '@/utils/storage';
 import { getUploadedAudioId, sendRequestWithToken} from '@/utils/requests';
 import { convertToMp3 } from '@/utils/audio_processing';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import { ConnectionStatus, ConnectionType, Network } from '@capacitor/network';
 import Message from './Message.vue';
 
 const props = defineProps<{audio: AudioInternal}>()
@@ -27,8 +31,24 @@ const emit = defineEmits<{(e: 'delete', id: string): void,(e: 'upload', id: Audi
 
 const uploadedSuccess = ref(false)
 const uploadShowMessage = ref<typeof Message | null>(null)
+const connectionType = ref<ConnectionType>('unknown')
 
-const uploadAudio = async () => { // TODO
+const alertButtons = [
+  { text: 'Continua',
+    handler: () => {uploadAudio()} },
+  { text: 'Attendi WiFi',
+    role: 'enqueue',
+    cssClass: 'secondary',
+    handler: () => {
+      console.log('Cancel clicked');
+    }
+  }
+]
+
+const uploadAudio = async () => {
+  
+  console.log('uploading audio...')
+
   const { promise: uploadSucess, resolve: uploadResolve, reject: uploadReject } = Promise.withResolvers<boolean>()
 
   const data = new FormData()
@@ -71,4 +91,13 @@ const uploadAudio = async () => { // TODO
 const deleteAudio = () => {
   emit('delete', props.audio.hash)
 }
+
+onMounted(async () => {
+  connectionType.value = await Network.getStatus().then((status : ConnectionStatus) => status.connectionType)
+  console.log('Connection type:', connectionType.value)
+  Network.addListener('networkStatusChange', async (status) => {
+    connectionType.value = status.connectionType
+    console.log('Network status changed', status)
+  })
+})
 </script>
