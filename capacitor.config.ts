@@ -26,7 +26,15 @@ const config: CapacitorConfig = {
       electronWindowsLocation: "C:\\ProgramData\\CapacitorDatabases",
       electronMacLocation: "/Volumes/Development_Lacie/Development/Databases",
       electronLinuxLocation: "Databases"
-    }
+    },
+    BackgroundRunner: {
+      label: "com.rambler.network.task",
+      src: "runners/background.js",
+      event:"networkStatusChange",
+      repeat: true,
+      interval: 1,
+      autoStart: true,
+    },
   }
 };
 
