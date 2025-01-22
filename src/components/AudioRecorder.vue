@@ -24,7 +24,13 @@ const startRecording = async () => VoiceRecorder.startRecording()
       recording.value = true
       timestamp.value?.play()
     })
-    .catch(error => console.error(error))
+  .catch(async (error) => {
+    VoiceRecorder.requestAudioRecordingPermission().then(async (result: GenericResponse) => {
+      if (result.value) {
+        startRecording()
+      }
+    })
+  })
 
 
 const stopRecording = async () => VoiceRecorder.stopRecording()
