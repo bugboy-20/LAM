@@ -39,11 +39,17 @@ export default defineConfig({
         target: 'https://0x0.st',
         changeOrigin: true,
         rewrite: path => path.replace(/^\/0x0st/, ''),
+      },
+      '/leaflet': {
+        target: 'https://tile.openstreetmap.org',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/leaflet/, ''),
       }
     },
     headers: {
-      'Cross-Origin-Opener-Policy': 'same-origin',
-      'Cross-Origin-Embedder-Policy': 'require-corp'
+      'Cross-Origin-Opener-Policy': 'cross-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Resource-Policy': 'cross-origin'
     }
   },
   optimizeDeps : {
