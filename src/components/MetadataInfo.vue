@@ -1,18 +1,18 @@
 <template >
   <div id="metaInfo">
     <div id="metaLine" v-for="line in metadataAndIcon" >
-      <IonAccordionGroup v-if="typeof(line.data) === 'object'">
+      <div v-if="typeof(line.data) === 'object'"><IonAccordionGroup >
         <IonAccordion>
           <IonItem slot="header">
-            <IonLabel>{{line.name}}</IonLabel>
+            <IonLabel><b>{{line.name}}</b></IonLabel>
           </IonItem>
           <template v-for="(value, key) in line.data" >
-            <div slot="content">{{key}} {{value}}%</div>
+            <div slot="content"><b class="stat">{{key}}</b>{{value}}%</div>
           </template>
         </IonAccordion>
-      </IonAccordionGroup>
+        </IonAccordionGroup></div>
       <template v-else>
-        <p>{{line.name}}</p>
+        <p><b>{{line.name}}</b></p>
         <p>{{line.data}}</p>
       </template>
     </div>
@@ -65,6 +65,15 @@ const metadataAndIcon = [
   flex-direction: column;
   justify-content: space-between;
   padding: 1rem;
+}
+.stat {
+  font-weight: normal;
+  font-style: italic;
+  padding-right: 0.5em;
+}
+b {
+  font-size: 1.1em;
+  padding-right: 0.5em;
 }
 
 </style>

@@ -1,7 +1,10 @@
 <template>
   <Suspense>
   <div>
-    <h1>{{audioInfos.creator_username}}</h1>
+    <div id="username">
+      <IonIcon :icon="personSharp" id="usericon"/>
+      <h1> {{audioInfos.creator_username}}</h1>
+    </div>
     <MetadataInfo v-if="audioInfos.id==0" :metadata="audioInfos.tags" />
     <MetadataInfo v-else :metadata="audioInfos.tags" />
   </div>
@@ -13,6 +16,8 @@
 
 <script setup lang="ts">
 import {getAudioInfo as getAudioAPI} from '@/utils/requests';
+import { personSharp } from 'ionicons/icons';
+import { IonIcon } from '@ionic/vue';
 import MetadataInfo from './MetadataInfo.vue';
 import {onMounted, ref} from 'vue';
 import { AudioAPI } from '@/interfaces';
@@ -42,3 +47,19 @@ defineExpose({
 });
 </script>
 
+<style scoped>
+h1 {
+  font-size: 1.2em;
+  margin-top: 0.5em;
+  margin-left: 0.5em;
+}
+#usericon {
+  font-size: 1.2em;
+  margin-top: 0.5em;
+}
+#username {
+  display: flex;
+  justify-content: left;
+  align-content: baseline;
+}
+</style>
