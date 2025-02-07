@@ -1,7 +1,7 @@
 
 import { Preferences } from "@capacitor/preferences";
 import { getToken, getUserLogin } from "./storage";
-import {Audio, AudioSummary} from "@/interfaces";
+import {Audio, AudioAPI, AudioInternal, AudioSummary} from "@/interfaces";
 
 export type Handler = {
   status: number;
@@ -107,6 +107,37 @@ const getAudioSummary = async () : Promise<AudioSummary[]> => {
   ])
   return await promise;
 }
+/*
+{ "longitude": float, "longitude":
+float, "id": int, "creator id": int,
+"creator username": string, "tags": See Table
+}
+*/
+const getAudio = async (id: number) : Promise<AudioAPI> => {
+  let {promise: audioP, resolve: audioRes, reject: audioRej } = Promise.withResolvers<AudioAPI>()
+  await sendRequestWithToken('GET', `/api/audio/${id}`, undefined, [
+    {
+      status: 200,
+      callback: async (_, res) => res.json().then(async (json) => {
+        if (!json)
+          audioRej(new Error('No audio found'));
+        audioRes({
+          coordinates: {
+            latitude: json.latitude,
+            longitude: json.longitude
+          },
+          id: json.id,
+          creator_id: json.creator_id,
+          creator_username: json.creator_username,
+          metadata: {
+            hidden: false,
+            ...json.tags
+          }
+        })
+      })}],
+  async (_, res) => { console.error('Error:', res); audioRej('No audio found') });
+  return await audioP;
+}
 
 // get the last uploaded audio id by confronting the user's audios before and after the upload
 const getUploadedAudioId = async (uploadSucessful : Promise<boolean>) : Promise<number> => {
@@ -124,4 +155,4 @@ const getUploadedAudioId = async (uploadSucessful : Promise<boolean>) : Promise<
 }
 
 
-export { sendRequest, sendRequestWithToken, logUserIn, renewToken, getUploadedAudioId, getAudioSummary };
+export { sendRequest, sendRequestWithToken, logUserIn, renewToken, getUploadedAudioId, getAudioSummary, getAudio };

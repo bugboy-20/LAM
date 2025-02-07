@@ -2,7 +2,7 @@
   <div id="card" v-if="visible">
     <div id="base-info">
       <IonButton fill="clear" @click="playFunction">
-        <IonIcon :icon="playIcon" ></IonIcon>
+        <IonIcon :icon="playIcon" :disabled="props.audio.audioBase64==''"></IonIcon>
       </IonButton>
       <AudioTimestamp :duration="props.audio.duration" ref="timestamp"/>
       <AudioPreview :audio="audio" v-if="!props.audio.metadata" @delete="deleted" @upload="(uploadedAudio) => {props.audio.metadata = uploadedAudio.metadata}"/>

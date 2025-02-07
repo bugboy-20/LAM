@@ -20,7 +20,7 @@ export interface AudioInternal {
   metadata?: Audio;
 }
 
-export interface AudioExternal {
+export interface AudioAPI { // response from /apo/audio/:id
   id: number;
   coordinates: Coordinates;
   creator_username: string;

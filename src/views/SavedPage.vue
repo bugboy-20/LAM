@@ -37,8 +37,8 @@
 import { ref } from 'vue';
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonSelect, IonSelectOption } from '@ionic/vue';
 import {deleteAudio, readAllAudioMetadata } from '@/utils/storage';
-import {getAudioSummary, sendRequestWithToken} from '@/utils/requests';
-import {AudioInternal} from '@/interfaces';
+import {getAudioSummary, getAudio, sendRequestWithToken} from '@/utils/requests';
+import {AudioInternal, AudioAPI } from '@/interfaces';
 import {AudioSummary} from '@/interfaces';
 
 import Audio from '@/components/Audio.vue';
@@ -51,26 +51,52 @@ const audios = ref<AudioInternal[]>([]);
 const ids = ref<string>("");
 
 onMounted(async () => {
-  ids.value = await getAudioSummary().then((result) => JSON.stringify(result));
+  ids.value = await getAudioSummary().then((result) => JSON.stringify(result))
   readDatabase();
+  //console.log(await getAudio(538))
 });
 
+const fromAPIToInternal = (audio: AudioAPI): AudioInternal => {
+  return {
+    hash: "",
+    audioBase64: "",
+    mimeType: "",
+    id: audio.id,
+    duration: 0,
+    coordinates: Promise.resolve(audio.coordinates),
+    createdAt: new Date(),
+    metadata: audio.metadata,
+  }
+};
 
 const readDatabase = async () => {
-  Promise.all([readAllAudioMetadata(), getAudioSummary()]).then(([DBaudio, ServerAudio]) => {
-    DBaudio.forEach((audio) => {
-      if (audio.id === undefined) {
-        return;
+  audios.value = [];
+  Promise.all([readAllAudioMetadata(), getAudioSummary()]).then(async ([DBaudio, ServerAudio]) => {
+    audios.value.concat(DBaudio.map((audio) => { // aggiungo audio dal database
+      if (!audio.id)
+        return audio;
+
+      const apiInfo = ServerAudio.find((element) => element.id === audio.id);
+
+      if (apiInfo && audio.metadata) { // se l'audio è presente nel summary aggiungo info visibilità
+        audio.metadata.hidden = apiInfo.hidden;
+      } else {
+        console.error(`Audio ${audio.id} non trovato nel summary o non ha metadata`);
       }
-      const found = ServerAudio.find((a) => a.id === audio.id);
-      if (found) {
-        if( audio.metadata)
-          audio.metadata.hidden = found.hidden;
-        audios.value.push(audio);
-      }
-    });
+      return audio;
+    }));
+
+    const spareAudio = ServerAudio.filter((audio) => !audios.value.find((element) => element.id === audio.id))
+    const apiAudio = Promise.all(
+      spareAudio.map(async (e) => await getAudio(e.id)
+        .catch(_ => undefined))) as Promise<AudioAPI[]>;
+
+    const cleanApiAudio = (await apiAudio).filter((e) => e !== undefined).map(fromAPIToInternal);
+    audios.value.concat(cleanApiAudio);
+    
+
   });
- }
+};
 
 const removeDatabase = async () => {
   try {
@@ -91,7 +117,9 @@ const deleteUploadedAudio = async () => {
       {status: 200, callback: async (req, res) => {
         console.log(`audio ${id} eliminato`);
       }}
-    ]);
+    ],async (req, res) => {
+      console.error(`Errore nella cancellazione dell'audio ${id}`);
+    });
   }))
   await Promise.all(audios);
 };
