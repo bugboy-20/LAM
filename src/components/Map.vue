@@ -1,23 +1,27 @@
 <template>
   <div id="map"></div>
+  
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { createApp, onMounted, ref } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility';
 import {getCoordinates} from '@/utils/geolocation';
 import {sendRequestWithToken} from '@/utils/requests';
+
+import ExenalAudioInfos from './ExenalAudioInfos.vue';
+
 //https://www.npmjs.com/package/leaflet.markercluster
 const map = ref<any | null>(null);
 const markers = ref<any[]>([]);
 
 const icon = L.icon({
-  iconUrl: '@/public/pin.jpg',
-  iconSize: [64,64],
-  iconAnchor: [32,64],
-  popupAnchor: [0,-64]
+  iconUrl: 'pin.png',
+  iconSize: [46,65],
+  iconAnchor: [23,65],
+  popupAnchor: [0,-65]
 });
 
 onMounted(async () => {
@@ -51,12 +55,18 @@ const makeMarker = (audio : {id: number, coords: {lat: number, lon: number}}) =>
   const marker = L.marker([audio.coords.lat, audio.coords.lon],{
     icon: icon
   }).addTo(map.value);
-  marker.bindPopup(`<b>Audio ${audio.id}</b><br>Click to listen!`).openPopup();
-  console.log('Marker created');
-  console.log(marker);
-  // Handle marker click
+
+
+  const popupContent = document.createElement("div");
+  const popupApp = createApp(ExenalAudioInfos, {id: audio.id});
+  const popupContentIstance = popupApp.mount(popupContent);
+
+  const popup = marker.bindPopup(popupContent);
   marker.on('click', () => {
-    alert('Marker clicked!');
+    popup.openPopup();
+    popupContentIstance.getAudioInfo(audio.id);
+    // Handle marker click
+      
   });
   
   return marker;

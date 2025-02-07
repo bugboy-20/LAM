@@ -20,6 +20,13 @@ export interface AudioInternal {
   metadata?: Audio;
 }
 
+export interface AudioExternal {
+  id: number;
+  coordinates: Coordinates;
+  creator_username: string;
+  tags: Audio
+}
+
 export type Coordinates = {
   latitude: number;
   longitude: number;
