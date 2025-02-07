@@ -20,14 +20,6 @@
       <div>
         <Audio v-for="audio in audios" :audio="audio" :key="audio.hash" />
       </div>
-       <ion-accordion-group>
-        <ion-accordion>
-          <ion-item slot="header">
-            <ion-label>First Accordion</ion-label>
-          </ion-item>
-          <div slot="content">First Content</div>
-        </ion-accordion>
-       </ion-accordion-group>
        {{ ids }}
     </ion-content>
   </ion-page>
@@ -88,13 +80,16 @@ const readDatabase = async () => {
 
     const spareAudio = ServerAudio.filter((audio) => !audios.value.find((element) => element.id === audio.id))
     const apiAudio = Promise.all(
-      spareAudio.map(async (e) => await getAudio(e.id)
-        .catch(_ => undefined))) as Promise<AudioAPI[]>;
+      spareAudio.map(async (e) => getAudio(e.id).catch(_ => undefined)))
 
-    const cleanApiAudio = (await apiAudio).filter((e) => e !== undefined).map(fromAPIToInternal);
-    audios.value.concat(cleanApiAudio);
-    
+    const cleanApiAudio = (await apiAudio).filter((e) => e !== undefined).map(async (e) => {
+      console.log(e);
+      return fromAPIToInternal(e)}) as Promise<AudioInternal>[];
+    //audios.value.concat(cleanApiAudio);
 
+    audios.value = audios.value.concat(await Promise.all(cleanApiAudio));
+
+    console.log(JSON.stringify(spareAudio));
   });
 };
 
