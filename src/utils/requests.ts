@@ -113,6 +113,7 @@ float, "id": int, "creator id": int,
 "creator username": string, "tags": See Table
 }
 */
+/*
 const getAudio = async (id: number) : Promise<AudioAPI> => {
   let {promise: audioP, resolve: audioRes, reject: audioRej } = Promise.withResolvers<AudioAPI>()
   await sendRequestWithToken('GET', `/api/audio/${id}`, undefined, [
@@ -137,7 +138,31 @@ const getAudio = async (id: number) : Promise<AudioAPI> => {
       })}],
   async (_, res) => { console.error('Error:', res); audioRej('No audio found') });
   return await audioP;
+}*/
+
+const getAudioInfo = async (id: number) : Promise<AudioAPI> => {
+
+  let audioInfos : Promise<AudioAPI> = new Promise(async (resolve, reject) => {
+    await sendRequestWithToken('GET',`/api/audio/${id}`,null,[{
+      status: 200,
+      callback: async (_,res) => {
+        res.json().then((data) => {
+          resolve({
+            id: data.id,
+            coordinates: {
+              latitude: data.latitude,
+              longitude: data.longitude
+            },
+            creator_username: data.creator_username,
+            tags: data.tags,
+          })
+        });
+      }}],async (_,res) => reject(`Error: ${res}`));
+  });
+  return await audioInfos;
 }
+
+
 
 // get the last uploaded audio id by confronting the user's audios before and after the upload
 const getUploadedAudioId = async (uploadSucessful : Promise<boolean>) : Promise<number> => {
@@ -155,4 +180,4 @@ const getUploadedAudioId = async (uploadSucessful : Promise<boolean>) : Promise<
 }
 
 
-export { sendRequest, sendRequestWithToken, logUserIn, renewToken, getUploadedAudioId, getAudioSummary, getAudio };
+export { sendRequest, sendRequestWithToken, logUserIn, renewToken, getUploadedAudioId, getAudioSummary, getAudioInfo };

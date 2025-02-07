@@ -58,7 +58,7 @@ const makeMarker = (audio : {id: number, coords: {lat: number, lon: number}}) =>
 
 
   const popupContent = document.createElement("div");
-  const popupApp = createApp(ExenalAudioInfos, {id: audio.id});
+  const popupApp = createApp(ExenalAudioInfos);
   const popupContentIstance = popupApp.mount(popupContent);
 
   const popup = marker.bindPopup(popupContent);

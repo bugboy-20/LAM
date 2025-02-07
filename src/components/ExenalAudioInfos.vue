@@ -1,43 +1,40 @@
 <template>
+  <Suspense>
   <div>
-    <h1>External Audio Infos</h1>
-    <p>Here you can see the external audio infos</p>
-    <p>{{audioInfos}}</p>
+    <h1>{{audioInfos.creator_username}}</h1>
+    <MetadataInfo v-if="audioInfos.id==0" :metadata="audioInfos.tags" />
+    <MetadataInfo v-else :metadata="audioInfos.tags" />
   </div>
+  <template #fallback>
+    Loading...
+  </template>
+  </Suspense>
 </template>
 
 <script setup lang="ts">
-import {sendRequestWithToken} from '@/utils/requests';
-import {ref} from 'vue';
-import { AudioExternal } from '@/interfaces';
+import {getAudioInfo as getAudioAPI} from '@/utils/requests';
+import MetadataInfo from './MetadataInfo.vue';
+import {onMounted, ref} from 'vue';
+import { AudioAPI } from '@/interfaces';
 
-const audioInfos = ref<AudioExternal | null>(null);
-
-const props = defineProps<{
-  id: number;
-}>();
-
+const audioInfos = ref<AudioAPI>({
+  id: 0,
+  creator_username: '',
+  coordinates: {longitude: 0, latitude: 0},
+  tags: {
+    hidden: true,
+    bpm: 0,
+    danceability: 0,
+    loudness: 0,
+    mood: {},
+    instrument: {},
+    genre: {},
+  }
+})
 
 
 const getAudioInfo = async (id: number) => {
-
-  await sendRequestWithToken('GET',`/api/audio/${id}`,null,[{
-    status: 200,
-    callback: async (req,res) => {
-      res.json().then((data) => {
-        audioInfos.value = {
-          id: data.id,
-          coordinates: {
-            latitude: data.latitude,
-            longitude: data.longitude
-          },
-          creator_username: data.creator_username,
-          tags: data.tags,
-        }
-
-      });
-    }}])
-  return audioInfos.value;
+  audioInfos.value = await getAudioAPI(id);
 }
 
 defineExpose({

@@ -37,7 +37,7 @@
 import { ref } from 'vue';
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonSelect, IonSelectOption } from '@ionic/vue';
 import {deleteAudio, readAllAudioMetadata } from '@/utils/storage';
-import {getAudioSummary, getAudio, sendRequestWithToken} from '@/utils/requests';
+import {getAudioSummary, getAudioInfo as getAudio, sendRequestWithToken} from '@/utils/requests';
 import {AudioInternal, AudioAPI } from '@/interfaces';
 import {AudioSummary} from '@/interfaces';
 
@@ -65,7 +65,7 @@ const fromAPIToInternal = (audio: AudioAPI): AudioInternal => {
     duration: 0,
     coordinates: Promise.resolve(audio.coordinates),
     createdAt: new Date(),
-    metadata: audio.metadata,
+    metadata: audio.tags,
   }
 };
 
