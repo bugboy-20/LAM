@@ -4,6 +4,7 @@
 </template>
 
 <script setup lang="ts">
+import variables from '@/variables.json';
 import { createApp, onMounted, ref } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -72,7 +73,7 @@ const makeMarker = (audio : {id: number, coords: {lat: number, lon: number}}) =>
   return marker;
 }
 
-const getAllAudiosPin = async () => sendRequestWithToken('GET', '/api/audio/all', null, [{
+const getAllAudiosPin = async () => sendRequestWithToken('GET', `${variables.apiURL}/audio/all`, null, [{
   status: 200,
   callback: async (_,res) => res.json().then((data) => {
     data.forEach((e : any) => {

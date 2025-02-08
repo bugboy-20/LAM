@@ -3,5 +3,15 @@
   "integrations": {
     "capacitor": {}
   },
+  "proxies": [
+    {
+      "path": "/api",
+      "proxyUrl": "http://130.136.2.83/lam2024"
+    },
+    {
+      "path": "/leaflet",
+      "proxyUrl": "https://tile.openstreetmap.org" 
+    }
+  ],
   "type": "vue-vite"
 }

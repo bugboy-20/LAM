@@ -1,11 +1,42 @@
-
+import variables from "@/variables.json";
+import { Http, HttpOptions } from "@capacitor-community/http";
 import { Preferences } from "@capacitor/preferences";
 import { getToken, getUserLogin } from "./storage";
-import {Audio, AudioAPI, AudioInternal, AudioSummary} from "@/interfaces";
+import { AudioAPI, AudioSummary} from "@/interfaces";
 
 export type Handler = {
   status: number;
   callback: (req: Request, res: Response) => Promise<void>;
+}
+
+const fetchFn = async (request: Request) => {
+  const method = request.method;
+  const options : HttpOptions = {
+    url: request.url,
+    method: method,
+    headers: request.headers as any,
+    data: request.body,
+
+  }
+  const response = await Http.request(options);
+  const res = new Response(response.data, {
+    status: response.status,
+    headers: response.headers as any,
+  });
+  return res;
+  /*
+  switch (method) {
+    case 'GET':
+      return fetch(request);
+    case 'POST':
+      return fetch(request);
+    case 'PUT':
+      return fetch(request);
+    case 'DELETE':
+      return fetch(request);
+    default:
+      return Promise.reject(new Error('Invalid method'));
+  }*/
 }
 
 const sendRequest = async (method: string, url: string, headers: any, body: any, handlers: Handler[], fallback?: Handler['callback']) => {
@@ -19,7 +50,7 @@ const sendRequest = async (method: string, url: string, headers: any, body: any,
     body: body,
   });
 
-  await fetch(request)
+  await fetchFn(request)
     .then(async (response) => {
       if (response.status === 401) {
         const errMsg = (await response.json()).detail;
@@ -70,7 +101,7 @@ const renewToken = async (username?: string, password?: string) => {
     password = user.password ?? '';
   }
 
-  const token = await fetch(`/api/auth/token`, {
+  const token = await fetch(`${variables.apiURL}/auth/token`, {
     mode: 'cors',
     method: 'POST',
     body: new URLSearchParams({
@@ -97,7 +128,7 @@ const renewToken = async (username?: string, password?: string) => {
 
 const getAudioSummary = async () : Promise<AudioSummary[]> => {
   const { promise, resolve, reject:_ } = Promise.withResolvers<AudioSummary[]>();
-  sendRequestWithToken('GET', '/api/audio/my', undefined, [
+  sendRequestWithToken('GET', '${variables.apiURL}/audio/my', undefined, [
     {
       status: 200,
       callback: async (_, res) => {
@@ -116,7 +147,7 @@ float, "id": int, "creator id": int,
 /*
 const getAudio = async (id: number) : Promise<AudioAPI> => {
   let {promise: audioP, resolve: audioRes, reject: audioRej } = Promise.withResolvers<AudioAPI>()
-  await sendRequestWithToken('GET', `/api/audio/${id}`, undefined, [
+  await sendRequestWithToken('GET', `${variables.apiURL}/audio/${id}`, undefined, [
     {
       status: 200,
       callback: async (_, res) => res.json().then(async (json) => {
@@ -143,7 +174,7 @@ const getAudio = async (id: number) : Promise<AudioAPI> => {
 const getAudioInfo = async (id: number) : Promise<AudioAPI> => {
 
   let audioInfos : Promise<AudioAPI> = new Promise(async (resolve, reject) => {
-    await sendRequestWithToken('GET',`/api/audio/${id}`,null,[{
+    await sendRequestWithToken('GET',`${variables.apiURL}/audio/${id}`,null,[{
       status: 200,
       callback: async (_,res) => {
         res.json().then((data) => {

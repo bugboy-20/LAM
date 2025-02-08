@@ -25,7 +25,7 @@ import { convertToMp3 } from '@/utils/audio_processing';
 import { onMounted, ref } from 'vue';
 import { ConnectionStatus, ConnectionType, Network } from '@capacitor/network';
 import Message from './Message.vue';
-
+import variables from '@/variables.json';
 const props = defineProps<{audio: AudioInternal}>()
 const emit = defineEmits<{(e: 'delete', id: string): void,(e: 'upload', id: AudioInternal): void}>()
 
@@ -64,7 +64,7 @@ const uploadAudio = async () => {
   console.log('uploading audio')
 
   //downloadAudioFile(file)
-  sendRequestWithToken('POST', `/api/upload?longitude=${coords.longitude}&latitude=${coords.latitude}`, data, [
+  sendRequestWithToken('POST', `${variables.apiURL}/upload?longitude=${coords.longitude}&latitude=${coords.latitude}`, data, [
   //sendRequest('POST', '/0x0st/', {'Allow-Origin':'*'}, data, [
     {status: 200, callback: async (_,res) => {
       res.json().then(async (data) => {
