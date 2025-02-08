@@ -5,29 +5,23 @@
         <ion-toolbar>
           <ion-title>
             Saved
-            <IonSelect v-model="selected" placeholder="Select One">
-              <IonSelectOption value="1">Option 1</IonSelectOption>
-              <IonSelectOption value="2">Option 2</IonSelectOption>
-              <IonSelectOption value="3">Option 3</IonSelectOption>
-            </IonSelect>
           </ion-title>
 
+          <IonRefresher slot="fixed" @ionRefresh="refreshDB($event)" >
+            <IonRefresherContent></IonRefresherContent>
+          </IonRefresher>
         </ion-toolbar>
       </ion-header>
-      <IonButton @click="readDatabase">Read Database</IonButton>
-      <IonButton @click="removeDatabase">Remove Database</IonButton>
-      <IonButton @click="deleteUploadedAudio">Delete Uploaded Audio</IonButton>
       <div>
         <Audio v-for="audio in audios" :audio="audio" :key="audio.hash" />
       </div>
-       {{ ids }}
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonSelect, IonSelectOption } from '@ionic/vue';
+        import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonRefresher, IonRefresherContent } from '@ionic/vue';
 import {deleteAudio, readAllAudioMetadata } from '@/utils/storage';
 import {getAudioSummary, getAudioInfo as getAudio, sendRequestWithToken} from '@/utils/requests';
 import {AudioInternal, AudioAPI } from '@/interfaces';
@@ -64,7 +58,7 @@ const fromAPIToInternal = (audio: AudioAPI): AudioInternal => {
 const readDatabase = async () => {
   audios.value = [];
   Promise.all([readAllAudioMetadata(), getAudioSummary()]).then(async ([DBaudio, ServerAudio]) => {
-    audios.value.concat(DBaudio.map((audio) => { // aggiungo audio dal database
+    const audioFromDB = DBaudio.map((audio) => { // aggiungo audio dal database
       if (!audio.id)
         return audio;
 
@@ -76,7 +70,12 @@ const readDatabase = async () => {
         console.error(`Audio ${audio.id} non trovato nel summary o non ha metadata`);
       }
       return audio;
-    }));
+    });
+    
+    console.log('audioFromDB');
+    console.log(audioFromDB);
+
+    audios.value = audios.value.concat(audioFromDB);
 
     const spareAudio = ServerAudio.filter((audio) => !audios.value.find((element) => element.id === audio.id))
     const apiAudio = Promise.all(
@@ -90,7 +89,15 @@ const readDatabase = async () => {
     audios.value = audios.value.concat(await Promise.all(cleanApiAudio));
 
     console.log(JSON.stringify(spareAudio));
+    console.log('audios');
+    console.log(audios.value);
   });
+};
+
+const refreshDB = async (event: CustomEvent) => {
+  audios.value = [];
+  await readDatabase();
+  event.detail.complete();
 };
 
 const removeDatabase = async () => {
