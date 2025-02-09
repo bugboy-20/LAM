@@ -35,7 +35,7 @@ onMounted(async () => {
   map.value = L.map('map').setView([44.5, 11.3], 10); // Default to Bologna
 
   // Add OpenStreetMap tiles
-  L.tileLayer("/leaflet/{z}/{x}/{y}.png", {
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(map.value);
 

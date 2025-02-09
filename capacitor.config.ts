@@ -1,4 +1,5 @@
 import type { CapacitorConfig } from '@capacitor/cli';
+import variables from './src/variables.json';
 
 const config: CapacitorConfig = {
   appId: 'io.ionic.starter',
@@ -6,7 +7,7 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     androidScheme: 'http',
-    allowNavigation: ['*'],
+    allowNavigation: [variables.apiURL, 'https://tile.openstreetmap.org'], 
     cleartext: true
   },
   android: {
