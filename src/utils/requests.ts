@@ -11,6 +11,7 @@ export type Handler = {
 }
 
 const fetchFn = async (request: Request) => {
+  /*
   const method = request.method;
   const options : HttpOptions = {
     url: request.url,
@@ -24,6 +25,8 @@ const fetchFn = async (request: Request) => {
     headers: response.headers as any,
   });
   return res;
+  */
+ return await window.fetch(request);
 }
 
 const sendRequest = async (method: string, url: string, headers: any, body: any, handlers: Handler[], fallback?: Handler['callback']) => {
