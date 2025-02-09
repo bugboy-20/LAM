@@ -25,6 +25,8 @@
 </template>
 
 <script setup lang="ts">
+import variables from '@/variables.json';
+import {sendRequest} from '@/utils/requests';
 import { IonButton, IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonNavLink, IonInputPasswordToggle, IonToast } from '@ionic/vue';
 import { ref } from 'vue';
 
@@ -38,34 +40,31 @@ async function singup() {
   if (singupError.value) {
     return; // prevent multiple clicks
   }
-  await fetch('/api/auth', {
-    method: 'POST',
-    headers: {
+  await sendRequest('POST',`${variables.apiURL}/auth`, {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
+    JSON.stringify({
       username: username.value,
       password: password.value,
     }),
-  }).then((response) => {
-    if (response.ok) {
-      console.log( response.json());
-    }
-    if (response.status === 400) {
-      const errorMessage = 'Username already exists. Please try another one.'
-      console.log(errorMessage);
-      message.value = errorMessage;
-      singupError.value = true;
-      setTimeout(() => {
-        singupError.value = false;
-      }, 2000);
-    }
-    throw new Error('Network response was not ok.');
-  }).catch((error) => {
-    console.error('There has been a problem with your fetch operation:', error);
-  });
-  //TODO login after signup, redirect to login page after successful signup
-}
+    [{
+      status: 200,
+      callback: async (_, response) => {
+        console.log(response);
+      }},
+      {
+      status: 400,
+      callback: async (_,res) => {
+        const errorMessage = 'Username already exists. Please try another one.'
+        console.log(errorMessage);
+        message.value = errorMessage;
+        singupError.value = true;
+        setTimeout(() => {
+          singupError.value = false;
+        }, 2000);
+      }
+    }], async (_,res) => { console.log(res); });
+ }
 
 
 </script>

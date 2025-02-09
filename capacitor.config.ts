@@ -1,13 +1,22 @@
 import type { CapacitorConfig } from '@capacitor/cli';
+import variables from './src/variables.json';
 
 const config: CapacitorConfig = {
   appId: 'io.ionic.starter',
   appName: 'rambler',
   webDir: 'dist',
   server: {
-    androidScheme: 'https'
+    androidScheme: 'http',
+    allowNavigation: [variables.apiURL, 'https://tile.openstreetmap.org'], 
+    cleartext: true
+  },
+  android: {
+    allowMixedContent: true
   },
   plugins: {
+    CapacitorHttp: {
+      enabled: true,
+    },
     CapacitorSQLite: {
       iosDatabaseLocation: 'Library/CapacitorDatabase',
       iosIsEncryption: true,

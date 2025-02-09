@@ -46,7 +46,7 @@ const username = ref('angolo180');
 const password = ref('Angolo.180');
 
 async function login() {
-  logUserIn(username.value, password.value).then(() => {
+  await logUserIn(username.value, password.value).then(() => {
     router.push(`/tabs`);
   }).catch((error) => {
     console.log(`passo per il catch: ${error}`);

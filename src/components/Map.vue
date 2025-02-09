@@ -4,6 +4,7 @@
 </template>
 
 <script setup lang="ts">
+import variables from '@/variables.json';
 import { createApp, onMounted, ref } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -34,7 +35,7 @@ onMounted(async () => {
   map.value = L.map('map').setView([44.5, 11.3], 10); // Default to Bologna
 
   // Add OpenStreetMap tiles
-  L.tileLayer("/leaflet/{z}/{x}/{y}.png", {
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(map.value);
 
@@ -72,7 +73,7 @@ const makeMarker = (audio : {id: number, coords: {lat: number, lon: number}}) =>
   return marker;
 }
 
-const getAllAudiosPin = async () => sendRequestWithToken('GET', '/api/audio/all', null, [{
+const getAllAudiosPin = async () => sendRequestWithToken('GET', `${variables.apiURL}/audio/all`, null, [{
   status: 200,
   callback: async (_,res) => res.json().then((data) => {
     data.forEach((e : any) => {

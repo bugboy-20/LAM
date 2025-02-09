@@ -1,21 +1,18 @@
 <template>
-  <ion-page>
-    <ion-header>
-      <ion-toolbar>
+  <IonPage>
+    <IonHeader>
+      <IonToolbar>
         <ion-title>Map</ion-title>
-      </ion-toolbar>
-    </ion-header>
+      </IonToolbar>
+    </IonHeader>
     <ion-content>
       <Map />
     </ion-content>
-  </ion-page>
+  </IonPage>
 </template>
 
-<script>
+<script setup lang="ts">
+import { IonContent, IonPage, IonHeader, IonToolbar, IonTitle } from '@ionic/vue';
 import Map from '@/components/Map.vue';
-
-export default {
-  components: { Map},
-};
 </script>
 

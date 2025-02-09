@@ -13,6 +13,7 @@
 
 <script setup lang="ts">
 // has no sense do this before uploading
+import variables from '@/variables.json';
 import { ref, watch } from 'vue';
 import { Audio, AudioInternal } from '@/interfaces';
 import { IonButton, IonIcon } from '@ionic/vue';
@@ -51,7 +52,7 @@ Response { "detail": "Song deleted" }
 */
 const deleteAudio = () => {
   emit('delete', props.audio.hash)
-  sendRequestWithToken('DELETE', `/api/audio/${props.audio.id}`, null, [
+  sendRequestWithToken('DELETE', `${variables.apiURL}/audio/${props.audio.id}`, null, [
     {status: 200, callback: async () => {
       console.log(`audio ${props.audio.id} eliminato`);
     }}
@@ -68,7 +69,7 @@ const deleteAudio = () => {
 const hideAudio = () => {
   hideStatus.value = !hideStatus.value
   let op = hideStatus.value ? 'hide' : 'show'
-  sendRequestWithToken('GET', `/api/audio/my/${props.audio.id}/${op}`, {}, [
+  sendRequestWithToken('GET', `${variables.apiURL}/audio/my/${props.audio.id}/${op}`, {}, [
     {status: 200, callback: async (req,res) => {
       res.text().then((data) => {
         console.log(`audio ${props.audio.id} ${op}ped, response: ${data}`);
