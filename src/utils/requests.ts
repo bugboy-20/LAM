@@ -1,8 +1,9 @@
 import variables from "@/variables.json";
-import { Http, HttpOptions } from "@capacitor-community/http";
+import { CapacitorHttp, HttpOptions, HttpResponse } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
 import { getToken, getUserLogin } from "./storage";
 import { AudioAPI, AudioSummary} from "@/interfaces";
+import {Http} from "@capacitor-community/http";
 
 export type Handler = {
   status: number;
@@ -16,27 +17,13 @@ const fetchFn = async (request: Request) => {
     method: method,
     headers: request.headers as any,
     data: request.body,
-
   }
-  const response = await Http.request(options);
+  const response = await CapacitorHttp.request(options)
   const res = new Response(response.data, {
     status: response.status,
     headers: response.headers as any,
   });
   return res;
-  /*
-  switch (method) {
-    case 'GET':
-      return fetch(request);
-    case 'POST':
-      return fetch(request);
-    case 'PUT':
-      return fetch(request);
-    case 'DELETE':
-      return fetch(request);
-    default:
-      return Promise.reject(new Error('Invalid method'));
-  }*/
 }
 
 const sendRequest = async (method: string, url: string, headers: any, body: any, handlers: Handler[], fallback?: Handler['callback']) => {
@@ -101,20 +88,75 @@ const renewToken = async (username?: string, password?: string) => {
     password = user.password ?? '';
   }
 
-  const token = await fetch(`${variables.apiURL}/auth/token`, {
-    mode: 'cors',
+  const body = new URLSearchParams({
+      username: username,
+      password: password,
+    })
+  let token = window.fetch(new Request( `${variables.apiURL}/auth/token`,{
+    method: 'POST',
+    mode: 'no-cors',
+    headers: new Headers({
+      'Content-Type': 'application/x-www-form-urlencoded',
+    }),
+    body: body
+  })).then(async (response : Response) => {       
+    if (response.status === 400) {
+      return Promise.reject(new Error('Invalid username or password'));
+    }
+    if (response.status === 200) {
+      return response.json();
+    }
+  }).then((json) => {
+    const token = json.client_secret;
+    console.log(token);
+    if (!token) {
+      return Promise.reject(new Error('No token found in response.'));
+    }
+    Preferences.set({key: 'token', value: token});
+    return token;
+  }) ?? '';
+  /*
+  let token = fetchFn(new Request(`${variables.apiURL}/auth/token`, {
     method: 'POST',
     body: new URLSearchParams({
       username: username,
       password: password,
-    })}).then((response) => {
+    })
+  }))
+    .then(async (response) => {
+      if (response.status === 400) {
+        return Promise.reject(new Error('Invalid username or password'));
+      }
+      if (response.status === 200) {
+        console.log(await response.text());
+        return response.json();
+      }
+    })
+    .then((json) => {
+      const token = json.client_secret;
+      console.log(token);
+      if (!token) {
+        return Promise.reject(new Error('No token found in response.'));
+      }
+      Preferences.set({key: 'token', value: token});
+      return token;
+    }) ?? '';*//*
+  const token = await fetch(`${variables.apiURL}/auth/token`, {
+    mode: 'no-cors',
+    method: 'POST',
+    body: new URLSearchParams({
+      username: username,
+      password: password,
+    })}).then(async (response) => {
       if(response.status == 400) {
         return Promise.reject(new Error('Invalid username or password'));
       }
       if(response.status == 200) {
+        console.log(await response.text());
         return response.json();
       }
     }).then((json) => {
+      console.log(json);
       const token = json.client_secret;
       if (!token) {
         return Promise.reject(new Error('No token found in response.'));
@@ -122,7 +164,7 @@ const renewToken = async (username?: string, password?: string) => {
       Preferences.set({key: 'token', value: token});
       return token as string;
       //return router.push(`/tabs/?token=${token}`); // TODO: secure this
-    }) ?? ''; // This is a workaround to make TypeScript happy
+    }) ?? ''; // This is a workaround to make TypeScript happy *  */
     return token;
 }
 

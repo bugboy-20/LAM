@@ -5,9 +5,17 @@ const config: CapacitorConfig = {
   appName: 'rambler',
   webDir: 'dist',
   server: {
-    androidScheme: 'https'
+    androidScheme: 'http',
+    allowNavigation: ['*'],
+    cleartext: true
+  },
+  android: {
+    allowMixedContent: true
   },
   plugins: {
+    CapacitorHttp: {
+      enabled: true,
+    },
     CapacitorSQLite: {
       iosDatabaseLocation: 'Library/CapacitorDatabase',
       iosIsEncryption: true,
