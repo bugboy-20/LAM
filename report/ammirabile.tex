@@ -56,20 +56,16 @@ Il filesystem ha quindi la seguente struttura:
             \item \texttt{utils/} contiene le utility
             \item \texttt{views/} contiene le viste
             \item \texttt{App.vue} è il file principale
-            \item \texttt{interfaces.ts} contiene le interfacce
+            \item \texttt{interfaces.ts} contiene le dichiarazioni dei tipi
             \item \texttt{main.ts} è il file principale
             \item \texttt{variables.json} contiene le variabili, di fatto solo l'URL dell'API
-            \item \texttt{vite-env.d.ts} contiene le variabili di ambiente
         \end{itemize}
     \item \texttt{capacitor.config.ts} contiene la configurazione di Capacitor
     \item \texttt{cypress.config.ts} contiene la configurazione di Cypress
     \item \texttt{index.html} è il file principale
     \item \texttt{ionic.config.json} contiene la configurazione di Ionic
-    \item \texttt{LICENSE} contiene la licenza
     \item \texttt{package-lock.json} contiene le dipendenze con le versioni esatte
     \item \texttt{package.json} contiene le dipendenze
-    \item \texttt{ProjectsLAM2024.pdf} contiene il progettato
-    \item \texttt{README.md} contiene le informazioni sul progettato
     \item \texttt{tsconfig.json} contiene la configurazione di TypeScript
     \item \texttt{tsconfig.node.json} contiene la configurazione di TypeScript per Node
     \item \texttt{vite.config.ts} contiene la configurazione di Vite
@@ -135,7 +131,7 @@ tra i sotto-componenti vanno annoverati \texttt{AudioTimestamp} che si occupa di
 
 
 \subsection{utility}
-Nella cartella \texttt{src/utils/} sono presenti le utility dell'applicazione, queste sono state progettate per evitare ripetizione di codice e per rispecchiare un'unità logica dell'applicazione, in una certa misura ogni file corrisponde a un model, quando questo è utile a più componenti. Questi sono in paricolare i file:
+Nella cartella \texttt{src/utils/} sono presenti le utility dell'applicazione, queste sono state progettate per evitare ripetizione di codice e per rispecchiare un'unità logica dell'applicazione, in una certa misura ogni file corrisponde a un model, quando questo è utile a più componenti.
 
 % audio_processing.ts
 % geolocation.ts
@@ -143,26 +139,51 @@ Nella cartella \texttt{src/utils/} sono presenti le utility dell'applicazione, q
 % requests.ts
 % storage.ts
 
-\begin{itemize}
-    \item \texttt{audio\_processing.ts} contiene le funzioni per la conversione dei codec audio tramite \texttt{FFmpeg} implementato in \texttt{WebAssembly} \footnote{FFmpeg è implementato in WebAssembly da \url{https://www.npmjs.com/package/@ffmpeg/ffmpeg}}
-    \item \texttt{geolocation.ts} contiene le funzioni per la geolocalizzazione, implementate tramite Capacitor \footnote{La geolocalizzazione è implementata tramite la libreria di Capacitor \url{https://capacitorjs.com/docs/apis/geolocation}}
-    \item \texttt{hash.ts} contiene le funzioni per l'hashing delle password, implementate tramite \texttt{typescript}
-    \item \texttt{requests.ts} contiene le funzioni per le richieste all'API, implementate tramite \texttt{Capacitor}
-    \item \texttt{storage.ts} contiene le funzioni per la gestione del database locale, implementate tramite \texttt{Capacitor} \footnote{Il database locale è implementato tramite la libreria della comunità di Capacitor \url{https://npmjs.com/package/@capacitor-community/sqlite}}
-\end{itemize}
+
+\subsubsection{\texttt{audio\_processing.ts}}
+Contiene le funzioni per la conversione dei codec audio tramite \texttt{FFmpeg} implementato in \texttt{WebAssembly} \footnote{FFmpeg è implementato in WebAssembly da \url{https://www.npmjs.com/package/@ffmpeg/ffmpeg}}
+
+Esistono altre librerie per la conversione dei codec audio, persino librerie native ma molte di esse non sono più mantenute, mentre non esiste una libreria ufficialmente supportata da Capacitor.\footnote{Indirettamente Capacitor supporta FFmpeg tramite il plugin di Cordova \url{https://www.npmjs.com/package/cordova-plugin-ffmpeg}, ma non è stato possibile utilizzarlo a causa di problemi di compatibilità con Capacitor}
+
+\subsubsection{\texttt{geolocation.ts}}
+Contiene le funzioni per la geolocalizzazione, implementate tramite \texttt{@capacitor/geolocation}\footnote{\url{https://capacitorjs.com/docs/apis/geolocation}}
+
+\subsubsection{\texttt{hash.ts}}
+ contiene la funzione per l'hashing degli file audio, siccome un identificatore univoco è associato all'audio solo in caso di caricamento sull'API, è stato necessario implementare una funzione per l'hashing degli audio, in modo da poterli identificare in locale. Tale funzione genera un intero a 32 bit usando come argomento l'audio in base64.
+
+La funzione utilizzata è l'hashing di FNV-1a, un algoritmo di hashing non crittografico, ma veloce e con bassa probabilità di collisione.\footnote{per maggiore informazioni sull'algoritmo di hashing di FNV-1a si veda \url{https://en.wikipedia.org/wiki/Fowler–Noll–Vo_hash_function}}
+
+ L'hashing è stato implementato tramite \texttt{typescript}, l'algoritmo utilizzato è il seguente:
+\begin{minted}{typescript}
+let hash = 0x811c9dc5; // FNV offset basis
+for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i);
+    hash = (hash * 0x01000193) >>> 0; // FNV prime
+}
+return hash >>> 0; // Return as unsigned 32-bit integer
+\end{minted}
+
+\subsubsection{\texttt{requests.ts}}
+Contiene le funzioni per le richieste all'API, la funzione più importante è \texttt{sendRequestWithToken}, questa funzione invia una richiesta all'API con il token di autenticazione, se il token è scaduto si occupa di richiedere un nuovo token. 
+
+Le funzioni utilizzano \texttt{window.fetch} per le richieste HTTP, \texttt{Capacitor} traduce le richieste in richieste native se vengono aggiunte le seguenti righe al file \texttt{capacitor.config.ts}:
+\begin{minted}{typescript}
+plugins: {
+    CapacitorHttp: {
+        enabled: true
+    }
+}
+\end{minted}
+
+\subsubsection{\texttt{storage.ts}}
+Contiene le funzioni per la gestione del database locale, implementate tramite \texttt{@capacitor-community/sqlite}\footnote{\url{https://npmjs.com/package/@capacitor-community/sqlite}} la libreria permette di utilizzare SQLite come database locale. 
+
+Capacitor propone anche altre librerie per l'archiviazione locale, come \texttt{Storage} e \texttt{Preferences}, è stato preferito utilizzare un database relazionale per gestire gli audio trattandosi di dati strutturati nonostante è stato necessario utilizzare una libreria della comunità.
+
+\texttt{Preferences} è stato utilizzato per la memorizzazione del token di autenticazione e delle credenziali dell'utente, in modo da evitare di doverle inserire ogni volta.
 
 \section{Interfaccia utente}
-
-% login.png
-% signup.png
-% record.png
-% recorded-audio.png
-% redorded-uploaded.png
-% map-pins.png
-% map-audio-info.png
-% map-audio-submenu.png
-% saved.png
-% saved-infos.png
+L'interfaccia utente è composta da una schermata di login, una schermata di registrazione e una schermata principale divisa in tre finestre: una finestra per la registrazione audio, una finestra per visualizzare gli audio registrati e una finestra per visualizzare la mappa con gli audio registrati da tutti gli utenti.
 
 \subsection{Login e registrazione}
 La prima schermata che si presenta all'utente è quella di login, questa pagina contiene anche il collegamento alla pagina di registrazione dell'utente. È possibile salvare le credenziali dell'utente per evitare di doverle inserire ogni volta.\footnote{ Le credenziali sono salvate tramite \url{https://capacitorjs.com/docs/apis/preferences}} Questa schermata è mostrata in figura \ref{fig:login}. La schermata di registrazione è mostrata in figura \ref{fig:signup}.
