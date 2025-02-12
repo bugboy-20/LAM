@@ -36,14 +36,23 @@ import {
   IonInputPasswordToggle
 } from '@ionic/vue';
 import { useRouter } from 'vue-router';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import Message from '@/components/Message.vue';
 import {logUserIn} from '@/utils/requests';
+import {getUserLogin} from '@/utils/storage';
 const router = useRouter();
 const loginError = ref< typeof Message | null>(null);
 const errorMessage = ref('Invalid username or passworddd AAAA');
 const username = ref('angolo180');
 const password = ref('Angolo.180');
+
+onMounted(() => {
+  getUserLogin().then((user) => {
+    if (user) {
+      router.push(`/tabs`);
+    }
+  });
+});
 
 async function login() {
   await logUserIn(username.value, password.value).then(() => {
