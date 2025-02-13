@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   appName: 'rambler',
   webDir: 'dist',
   server: {
-    androidScheme: 'http',
+    androidScheme: 'https',
     allowNavigation: [variables.apiURL, 'https://tile.openstreetmap.org'], 
     cleartext: true
   },

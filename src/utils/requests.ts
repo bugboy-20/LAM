@@ -1,9 +1,7 @@
 import variables from "@/variables.json";
-import { CapacitorHttp, HttpOptions, HttpResponse } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
 import { getToken, getUserLogin } from "./storage";
 import { AudioAPI, AudioSummary} from "@/interfaces";
-import {Http} from "@capacitor-community/http";
 
 export type Handler = {
   status: number;
@@ -11,22 +9,7 @@ export type Handler = {
 }
 
 const fetchFn = async (request: Request) => {
-  /*
-  const method = request.method;
-  const options : HttpOptions = {
-    url: request.url,
-    method: method,
-    headers: request.headers as any,
-    data: request.body,
-  }
-  const response = await CapacitorHttp.request(options)
-  const res = new Response(response.data, {
-    status: response.status,
-    headers: response.headers as any,
-  });
-  return res;
-  */
- return await window.fetch(request);
+   return await window.fetch(request);
 }
 
 const sendRequest = async (method: string, url: string, headers: any, body: any, handlers: Handler[], fallback?: Handler['callback']) => {
@@ -118,62 +101,12 @@ const renewToken = async (username?: string, password?: string) => {
     Preferences.set({key: 'token', value: token});
     return token;
   }) ?? '';
-  /*
-  let token = fetchFn(new Request(`${variables.apiURL}/auth/token`, {
-    method: 'POST',
-    body: new URLSearchParams({
-      username: username,
-      password: password,
-    })
-  }))
-    .then(async (response) => {
-      if (response.status === 400) {
-        return Promise.reject(new Error('Invalid username or password'));
-      }
-      if (response.status === 200) {
-        console.log(await response.text());
-        return response.json();
-      }
-    })
-    .then((json) => {
-      const token = json.client_secret;
-      console.log(token);
-      if (!token) {
-        return Promise.reject(new Error('No token found in response.'));
-      }
-      Preferences.set({key: 'token', value: token});
-      return token;
-    }) ?? '';*//*
-  const token = await fetch(`${variables.apiURL}/auth/token`, {
-    mode: 'no-cors',
-    method: 'POST',
-    body: new URLSearchParams({
-      username: username,
-      password: password,
-    })}).then(async (response) => {
-      if(response.status == 400) {
-        return Promise.reject(new Error('Invalid username or password'));
-      }
-      if(response.status == 200) {
-        console.log(await response.text());
-        return response.json();
-      }
-    }).then((json) => {
-      console.log(json);
-      const token = json.client_secret;
-      if (!token) {
-        return Promise.reject(new Error('No token found in response.'));
-      }
-      Preferences.set({key: 'token', value: token});
-      return token as string;
-      //return router.push(`/tabs/?token=${token}`); // TODO: secure this
-    }) ?? ''; // This is a workaround to make TypeScript happy *  */
-    return token;
+  return token;
 }
 
 const getAudioSummary = async () : Promise<AudioSummary[]> => {
   const { promise, resolve, reject:_ } = Promise.withResolvers<AudioSummary[]>();
-  sendRequestWithToken('GET', '${variables.apiURL}/audio/my', undefined, [
+  sendRequestWithToken('GET', `${variables.apiURL}/audio/my`, undefined, [
     {
       status: 200,
       callback: async (_, res) => {
@@ -189,32 +122,6 @@ float, "id": int, "creator id": int,
 "creator username": string, "tags": See Table
 }
 */
-/*
-const getAudio = async (id: number) : Promise<AudioAPI> => {
-  let {promise: audioP, resolve: audioRes, reject: audioRej } = Promise.withResolvers<AudioAPI>()
-  await sendRequestWithToken('GET', `${variables.apiURL}/audio/${id}`, undefined, [
-    {
-      status: 200,
-      callback: async (_, res) => res.json().then(async (json) => {
-        if (!json)
-          audioRej(new Error('No audio found'));
-        audioRes({
-          coordinates: {
-            latitude: json.latitude,
-            longitude: json.longitude
-          },
-          id: json.id,
-          creator_id: json.creator_id,
-          creator_username: json.creator_username,
-          metadata: {
-            hidden: false,
-            ...json.tags
-          }
-        })
-      })}],
-  async (_, res) => { console.error('Error:', res); audioRej('No audio found') });
-  return await audioP;
-}*/
 
 const getAudioInfo = async (id: number) : Promise<AudioAPI> => {
 

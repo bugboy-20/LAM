@@ -6,7 +6,6 @@
           <ion-title>
             Saved
           </ion-title>
-
           <IonRefresher slot="fixed" @ionRefresh="refreshDB($event)" >
             <IonRefresherContent></IonRefresherContent>
           </IonRefresher>

@@ -24,7 +24,6 @@ import { Audio } from '@/interfaces';
 import {IonAccordionGroup, IonAccordion, IonLabel} from '@ionic/vue';
 
 const props = defineProps<{metadata: Audio}>()
-console.log(`metadata: ${props.metadata}`)
 
 const metadataAndIcon = [
   { name: "bpm", data: props.metadata.bpm },
@@ -44,8 +43,6 @@ const metadataAndIcon = [
         .sort((a, b) => b[1] - a[1]) // Sort descending by value
         .slice(0, 5) // Take the top 5 entries
         .map(([key, value]) => [key, Math.round(value * 100)]); // Round the values to 2 decimals
-    console.log(item.data)
-    console.log(Object.fromEntries(top5Entries))
     item.data = Object.fromEntries(top5Entries);
   }
   return item;
