@@ -11,11 +11,7 @@
   </ion-page>
 </template>
 
-<script>
+<script setup lang="ts">
 import Map from '@/components/Map.vue';
-
-export default {
-  components: { Map},
-};
 </script>
 
